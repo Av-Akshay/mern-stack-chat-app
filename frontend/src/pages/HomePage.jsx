@@ -3,7 +3,7 @@ import axios from "axios";
 
 const HomePage = () => {
   const chatList = async () => {
-    const response = await axios.get("/api/chats");
+    const response = await axios.get("http://localhost:5000/api/chats");
     console.log(response);
   };
   useEffect(() => {
