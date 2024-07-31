@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const data = require("./data/data");
 const connectToMongoDb = require("./connection/connection");
 const userRoutes = require("./routes/userRoutes");
+const chatRouter = require("./routes/chatRoutes");
 // const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 const cors = require("cors");
 
@@ -20,11 +21,8 @@ app.use(express.json());
 //========== connection ============
 connectToMongoDb();
 
-// app.get("/api/user", (req, res) => {
-//   res.send({ msg: "your request is receive" });
-// });
-
 app.use("/api/user", userRoutes);
+app.use("/api/chat", chatRouter);
 
 app.listen(PORT, () => {
   console.log(`App is listening at port ${PORT}`);

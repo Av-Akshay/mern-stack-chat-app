@@ -42,7 +42,6 @@ const Login = () => {
           <p className="error-message">{errors?.password?.message}</p>
         )}
         <Button type={"submit"} text={"Login"} className={"bg-blue-600"} />
-        <Button text={"Get guest user credential"} className={"bg-red-600"} />
       </form>
     </>
   );
