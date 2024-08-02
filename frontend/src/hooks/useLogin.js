@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 const useLogin = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState("");
   const {
     handleSubmit,
     register,
@@ -14,8 +15,6 @@ const useLogin = () => {
   } = useForm();
 
   const submitForm = async (data) => {
-    console.log(data);
-
     try {
       setIsLoading(true);
       const res = await axios.post("/api/user/login", data);
@@ -26,7 +25,7 @@ const useLogin = () => {
       }
     } catch (error) {
       console.log(error);
-      reset();
+      setMessage(error?.response?.data?.message);
     }
   };
 
@@ -35,6 +34,7 @@ const useLogin = () => {
     register,
     errors,
     submitForm,
+    message,
   };
 };
 
