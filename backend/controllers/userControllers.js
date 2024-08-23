@@ -56,6 +56,7 @@ const authUser = asyncHandler(async (req, res) => {
 });
 
 const allUsers = asyncHandler(async (req, res) => {
+  // Check if there's a search query
   const keyword = req.query.search
     ? {
         $or: [
@@ -63,8 +64,16 @@ const allUsers = asyncHandler(async (req, res) => {
           { email: { $regex: req.query.search, $options: "i" } },
         ],
       }
-    : {};
+    : null;
+
+  // If no search query is provided, return an empty array
+  if (!keyword) {
+    return res.send([]);
+  }
+
+  // If there's a search query, proceed with the database search
   const users = await User.find(keyword).find({ _id: { $ne: req.user._id } });
+
   res.send(users);
 });
 

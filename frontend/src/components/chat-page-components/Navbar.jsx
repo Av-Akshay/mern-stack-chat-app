@@ -3,15 +3,14 @@ import chatBackground from "../../assets/images/chatAppBackground.avif";
 import Slider from "./navbar-component/Slider";
 import DropDown from "./navbar-component/DropDown";
 import Popup from "./navbar-component/Popup";
+import useGetChats from "../../hooks/useGetChats";
 
 const Navbar = () => {
   const [slider, setSlider] = useState(false);
   const [dropDown, setDropDown] = useState(false);
   const [popup, setPopup] = useState(false);
+  const { sliderIsOpen, handelCloseSlider, handelOpenSlider } = useGetChats();
 
-  const closeSlider = () => {
-    setSlider(false);
-  };
   const handleMouseLeave = () => {
     setDropDown(false);
   };
@@ -28,13 +27,11 @@ const Navbar = () => {
   return (
     <>
       <div className="h-[10vh] flex items-center justify-center bg-[rgba(0,0,0,0.5)]">
-        <Slider slider={slider} closeSlider={closeSlider} />
+        <Slider slider={sliderIsOpen} closeSlider={handelCloseSlider} />
         <div className="w-11/12 m-auto flex items-center justify-between">
           <div>
             <button
-              onClick={() => {
-                setSlider(true);
-              }}
+              onClick={handelOpenSlider}
               className="border rounded-md bg-gray-200 px-2 "
             >
               Search User
