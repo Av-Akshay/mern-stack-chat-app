@@ -5,6 +5,7 @@ const chatSlice = createSlice({
   initialState: {
     selectedChat: {},
     chats: [],
+    groupChatFormModel: false,
   },
   reducers: {
     handelSelectedChat: (state, action) => {
@@ -14,12 +15,37 @@ const chatSlice = createSlice({
       state.chats.push(action.payload);
     },
     handelAddChats: (state, action) => {
-      state.chats.push(...action.payload);
+      state.chats = action.payload;
+    },
+    handelAddGroupChat: (state, action) => {
+      state.chats.push(action.payload);
+    },
+    handelToggleGroupChatModel: (state, action) => {
+      state.groupChatFormModel = !state.groupChatFormModel;
+    },
+    changeTheGroupName: (state, action) => {
+      state.selectedChat = action.payload;
+      let allChats = state.chats.map((item) => {
+        if (item._id === action.payload._id) {
+          return action.payload;
+        } else {
+          return item;
+        }
+      });
+      console.log(allChats);
+
+      state.chats = allChats;
     },
   },
 });
 
-export const { handelSelectedChat, handelAddNewChat, handelAddChats } =
-  chatSlice.actions;
+export const {
+  handelSelectedChat,
+  handelAddNewChat,
+  handelAddChats,
+  handelAddGroupChat,
+  handelToggleGroupChatModel,
+  changeTheGroupName,
+} = chatSlice.actions;
 
 export default chatSlice;

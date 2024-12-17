@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
+import { useDispatch } from "react-redux";
+
 import useGetChats from "../../../hooks/useGetChats";
 import UsersChats from "../navbar-component/slider-component/UsersChats";
 import useCreateGroupChat from "../../../hooks/useCreateGroupChat";
+import { handelToggleGroupChatModel } from "../../../store/slice";
 
-const CreateGroupChat = ({ handelPopupModel }) => {
-  const initialValue = {
-    chatName: "",
-    chats: "",
-  };
+const CreateGroupChat = () => {
+  const dispatch = useDispatch();
   const {
     handelAddToGroup,
     handelCreateGroupChat,
@@ -22,7 +22,7 @@ const CreateGroupChat = ({ handelPopupModel }) => {
   useEffect(() => {
     const timeOut = setTimeout(() => {
       submitForm(modelSearch);
-    }, 2000);
+    }, 1000);
 
     return () => {
       clearTimeout(timeOut);
@@ -30,12 +30,14 @@ const CreateGroupChat = ({ handelPopupModel }) => {
   }, [modelSearch]);
   return (
     <div className="absolute top-0 left-0 h-screen w-full bg-[rgba(0,0,0,0.8)] flex items-center justify-center">
-      <div className=" w-[50%] bg-white p-14 relative rounded-lg flex flex-col gap-3 items-center justify-center">
+      <div className="relative w-[50%] bg-white p-14 rounded-lg flex flex-col gap-3 items-center justify-center">
         <h1 className="text-2xl font-medium m-0">Create Group Chat</h1>
 
         {/* close button */}
         <button
-          onClick={handelPopupModel}
+          onClick={() => {
+            dispatch(handelToggleGroupChatModel());
+          }}
           className="absolute top-5 right-5 text-xl font-medium"
         >
           X
@@ -64,6 +66,7 @@ const CreateGroupChat = ({ handelPopupModel }) => {
             })}
           </div>
         </div>
+
         {/* chat name form */}
         <form className="w-3/4">
           <input
@@ -81,7 +84,7 @@ const CreateGroupChat = ({ handelPopupModel }) => {
         {/* selected users for chat */}
         <form className="relative w-3/4">
           <input
-            name="users"
+            name="chats"
             value={modelSearch?.users}
             onChange={(e) => {
               handelInputChange(e);

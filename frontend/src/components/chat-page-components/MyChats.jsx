@@ -1,30 +1,34 @@
-import React, { useState } from "react";
+import React from "react";
+
+import useGetAllChats from "../../hooks/useGetAllChats";
 import useFetchChats from "../../hooks/useFetchChats";
-import { handelSelectedChat } from "../../store/slice";
+import {
+  handelSelectedChat,
+  handelToggleGroupChatModel,
+} from "../../store/slice";
 import CreateGroupChat from "./mychats-component/CreateGroupChat";
 
 const MyChats = () => {
-  const [model, setModel] = useState(false);
-  const { chats, dispatch, selectedChat, getSender } = useFetchChats();
-
-  const handelPopupModel = () => {
-    model ? setModel(false) : setModel(true);
-  };
+  const { groupChatFormModel, dispatch, selectedChat, getSender } =
+    useFetchChats();
+  const { chats } = useGetAllChats();
 
   return (
-    <div className="w-[35%] h-full bg-slate-100 rounded-md">
-      <div className="w-[95%] mx-auto my-2 flex items-center justify-between">
+    <div className="w-[35%] h-[90vh] overflow-auto bg-slate-100 rounded-md">
+      <div className="w-[95%] mx-auto my-5 flex items-center justify-between">
         <h1 className="text-2xl font-normal ">My Chats</h1>
         <button
-          onClick={handelPopupModel}
+          onClick={() => {
+            dispatch(handelToggleGroupChatModel());
+          }}
           className="text-base bg-slate-200 text-black  px-3 py-1 w-2/5 rounded-md outline-none"
         >
           New Chat Group +
         </button>
-        {model && <CreateGroupChat handelPopupModel={handelPopupModel} />}
+        {groupChatFormModel && <CreateGroupChat />}
       </div>
-      <div className="my-2 w-[95%] mx-auto flex flex-col gap-5">
-        {chats.map((chat, index) => {
+      <div className="my-2 w-[95%]  mx-auto flex flex-col justify-center gap-5">
+        {chats?.map((chat, index) => {
           return (
             <div
               key={chat._id}
@@ -35,9 +39,9 @@ const MyChats = () => {
                 selectedChat._id === chat._id
                   ? "bg-blue-500 text-white"
                   : "bg-slate-200 text-black"
-              } p-2 rounded-md overflow-auto`}
+              } p-2 h-full rounded-md overflow-auto`}
             >
-              <p className="capitalize">
+              <p className="capitalize h-full">
                 {!chat.isGroupChat ? getSender(chat?.users) : chat.chatName}
               </p>
             </div>

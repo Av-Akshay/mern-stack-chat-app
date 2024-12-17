@@ -1,11 +1,17 @@
 import axios from "../axiosInstance";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+
+import { handelAddGroupChat } from "../store/slice";
+import useFetchChats from "./useFetchChats";
 
 const useCreateGroupChat = () => {
+  const dispatch = useDispatch();
   const initialValue = {
     name: "",
-    users: "",
+    chats: "",
   };
+  const { setModel } = useFetchChats();
   const [selectToGroupChat, setSelectToGroupChat] = useState([]);
   const [modelSearch, setModelSearch] = useState(initialValue);
 
@@ -26,10 +32,12 @@ const useCreateGroupChat = () => {
         name: modelSearch.name,
         users: selectToGroupChat,
       });
-      console.log(response);
+
+      if (response?.statusText === "OK") {
+        dispatch(handelAddGroupChat(response?.data));
+      }
     } catch (error) {
       console.log(error);
-
       alert(error.message);
     }
   };

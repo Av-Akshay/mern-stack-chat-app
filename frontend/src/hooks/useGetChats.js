@@ -27,9 +27,12 @@ const useGetChats = () => {
   };
 
   const submitForm = async (data) => {
+    console.log(data);
+
     try {
       setLoading(true);
-      const response = await axios.get(`user?search=${data?.users}`);
+      const response = await axios.get(`user?search=${data?.chats}`);
+      console.log(response);
 
       if (response?.statusText === "OK") {
         setUserChat(response?.data);
