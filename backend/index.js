@@ -4,6 +4,7 @@ const data = require("./data/data");
 const connectToMongoDb = require("./connection/connection");
 const userRoutes = require("./routes/userRoutes");
 const chatRouter = require("./routes/chatRoutes");
+const messageRouter = require("./routes/messageRoutes");
 // const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 const cors = require("cors");
 
@@ -23,6 +24,7 @@ connectToMongoDb();
 
 app.use("/api/user", userRoutes);
 app.use("/api/chat", chatRouter);
+app.use("/api/messages", messageRouter);
 
 app.listen(PORT, () => {
   console.log(`App is listening at port ${PORT}`);

@@ -1,5 +1,4 @@
 import React from "react";
-import useGetChats from "../../../../hooks/useGetChats";
 
 const UsersChats = ({ item, handelAccessChat, handelAddToGroup }) => {
   return (

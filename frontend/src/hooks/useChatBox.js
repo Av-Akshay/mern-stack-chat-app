@@ -2,13 +2,12 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "../axiosInstance";
 
-import useGetAllChats from "./useGetAllChats";
-import useGetChats from "./useGetChats";
+import useMyChats from "./useMyChats";
 import { handelSelectedChat } from "../store/slice";
 
-const useShowChatType = () => {
-  const { handelFetchChats } = useGetAllChats();
-  const { submitForm, userChat } = useGetChats();
+const useChatBox = () => {
+  const { handelFetchChats, userChat, submitForm } = useMyChats();
+
   const dispatch = useDispatch();
 
   let initialValue = {
@@ -48,8 +47,6 @@ const useShowChatType = () => {
   }, [updateGroupChat]);
 
   const handelToggleChatTypePopup = () => {
-    console.log("clicked");
-
     setToggle(!toggle);
   };
 
@@ -68,7 +65,6 @@ const useShowChatType = () => {
       console.log(`error on adding user to group chat ${error}`);
     }
   };
-
   return {
     selectedChat,
     setUpdateGroupChat,
@@ -82,4 +78,4 @@ const useShowChatType = () => {
   };
 };
 
-export default useShowChatType;
+export default useChatBox;

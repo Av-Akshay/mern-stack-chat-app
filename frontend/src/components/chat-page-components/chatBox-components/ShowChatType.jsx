@@ -1,7 +1,7 @@
 import React from "react";
 
-import useShowChatType from "../../../hooks/useShowChatType";
 import UsersChats from "../navbar-component/slider-component/UsersChats";
+import useChatBox from "../../../hooks/useChatBox";
 
 const ShowChatType = ({ handelToggle }) => {
   const {
@@ -11,8 +11,7 @@ const ShowChatType = ({ handelToggle }) => {
     handelChangeTheGroupName,
     userChat,
     handelAddToGroup,
-  } = useShowChatType();
-  console.log(selectedChat);
+  } = useChatBox();
 
   return (
     <div className="absolute z-20 left-0 top-0 flex items-center justify-center w-[100vw] h-[100vh] bg-[rgba(0,0,0,0.4)] ">

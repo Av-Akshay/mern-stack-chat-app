@@ -1,7 +1,6 @@
 import React from "react";
 
-import useGetAllChats from "../../hooks/useGetAllChats";
-import useFetchChats from "../../hooks/useFetchChats";
+import useMyChats from "../../hooks/useMyChats";
 import {
   handelSelectedChat,
   handelToggleGroupChatModel,
@@ -9,9 +8,15 @@ import {
 import CreateGroupChat from "./mychats-component/CreateGroupChat";
 
 const MyChats = () => {
-  const { groupChatFormModel, dispatch, selectedChat, getSender } =
-    useFetchChats();
-  const { chats } = useGetAllChats();
+  const {
+    chats,
+    dispatch,
+    getSender,
+    groupChatFormModel,
+    handelFetchChats,
+    loading,
+    selectedChat,
+  } = useMyChats();
 
   return (
     <div className="w-[35%] h-[90vh] overflow-auto bg-slate-100 rounded-md">

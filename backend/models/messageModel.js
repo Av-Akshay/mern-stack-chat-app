@@ -11,7 +11,7 @@ const messageSchema = new mongoose.Schema(
       trim: true,
       require: true,
     },
-    chat: {
+    chatId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Chat",
     },

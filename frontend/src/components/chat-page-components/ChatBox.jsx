@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import { IoEye } from "react-icons/io5";
 
 import { ShowChatType } from "../index";
-import useLocalStorageData from "../../hooks/useLocalStorageData";
-import useShowChatType from "../../hooks/useShowChatType";
+import useChatBox from "../../hooks/useChatBox";
+import useMyChats from "../../hooks/useMyChats";
 
 const ChatBox = () => {
-  const { toggle, handelToggleChatTypePopup } = useShowChatType();
-  const { localData } = useLocalStorageData();
+  const { toggle, handelToggleChatTypePopup } = useChatBox();
+  const { handelInputChange, modelSearch } = useMyChats();
 
   return (
     <div className="w-[65%] h-full bg-slate-100 rounded-md p-2">
@@ -21,9 +21,12 @@ const ChatBox = () => {
         <div className=" h-full w-full  "></div>
         <form className="flex items-center gap-2 h-[6vh]">
           <input
+            onChange={handelInputChange}
+            name="message"
             className="w-full bg-transparent py-2 outline-none"
             type="text"
             placeholder="Send a message"
+            value={modelSearch?.message}
           />
           <button className="bg-transparent font-medium ">Send</button>
         </form>

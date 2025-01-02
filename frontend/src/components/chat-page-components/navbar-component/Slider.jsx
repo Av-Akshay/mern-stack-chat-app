@@ -1,8 +1,9 @@
 import React from "react";
-import useGetChats from "../../../hooks/useGetChats";
-import UsersChats from "./slider-component/UsersChats";
 
-const Slider = ({ slider, closeSlider }) => {
+import UsersChats from "./slider-component/UsersChats";
+import useMyChats from "../../../hooks/useMyChats";
+
+const Slider = ({ slider, closeSlider, handelAccessChat }) => {
   const {
     register,
     handleSubmit,
@@ -11,8 +12,7 @@ const Slider = ({ slider, closeSlider }) => {
     loading,
     message,
     userChat,
-    handelAccessChat,
-  } = useGetChats();
+  } = useMyChats();
 
   return (
     <div

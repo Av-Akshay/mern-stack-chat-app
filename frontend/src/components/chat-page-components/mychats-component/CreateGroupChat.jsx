@@ -1,23 +1,21 @@
 import React, { useEffect } from "react";
-import { useDispatch } from "react-redux";
 
-import useGetChats from "../../../hooks/useGetChats";
+import useMyChats from "../../../hooks/useMyChats";
 import UsersChats from "../navbar-component/slider-component/UsersChats";
-import useCreateGroupChat from "../../../hooks/useCreateGroupChat";
 import { handelToggleGroupChatModel } from "../../../store/slice";
 
 const CreateGroupChat = () => {
-  const dispatch = useDispatch();
   const {
+    submitForm,
+    userChat,
     handelAddToGroup,
     handelCreateGroupChat,
     selectToGroupChat,
     modelSearch,
     handelInputChange,
     handelRemoveSelectedUser,
-  } = useCreateGroupChat();
-
-  const { submitForm, userChat } = useGetChats();
+    dispatch,
+  } = useMyChats();
 
   useEffect(() => {
     const timeOut = setTimeout(() => {
@@ -28,6 +26,7 @@ const CreateGroupChat = () => {
       clearTimeout(timeOut);
     };
   }, [modelSearch]);
+
   return (
     <div className="absolute top-0 left-0 h-screen w-full bg-[rgba(0,0,0,0.8)] flex items-center justify-center">
       <div className="relative w-[50%] bg-white p-14 rounded-lg flex flex-col gap-3 items-center justify-center">
