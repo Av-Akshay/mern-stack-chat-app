@@ -4,8 +4,6 @@ const Chat = require("../models/chatModel.js");
 
 const sendMessage = asyncHandler(async (req, res) => {
   const { content, chatId } = req.body;
-  console.log(content);
-  console.log(chatId);
 
   if (!content || !chatId) {
     console.log("Invalid data passed into request");
@@ -42,6 +40,8 @@ const sendMessage = asyncHandler(async (req, res) => {
 });
 
 const allMessages = asyncHandler(async (req, res) => {
+  console.log(req.params);
+
   try {
     const messages = await Message.find({ chatId: req.params.chatId })
       .populate("sender", "name email pic")
