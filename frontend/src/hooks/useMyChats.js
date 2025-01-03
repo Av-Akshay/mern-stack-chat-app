@@ -9,6 +9,7 @@ import {
   handelAddChats,
   handelAddGroupChat,
 } from "../store/slice";
+import instance from "../axiosInstance";
 
 const useMyChats = () => {
   const dispatch = useDispatch();
@@ -34,6 +35,12 @@ const useMyChats = () => {
   const [sliderIsOpen, setSliderIsOpen] = useState(false);
   const [selectToGroupChat, setSelectToGroupChat] = useState([]);
   const [modelSearch, setModelSearch] = useState(initialValue);
+  const [sendingMessage, setSendingMessage] = useState(false);
+
+  //---------------------- redux-toolkit store data --------------------------
+  const { chats, selectedChat, groupChatFormModel } = useSelector(
+    (store) => store.chatStore
+  );
 
   //------------------------------------ create group chat component------------------------------
 
@@ -82,6 +89,7 @@ const useMyChats = () => {
     setSelectToGroupChat(newSelectedUser);
   };
 
+  //---------------------- handel open and close slider--------------------
   const handelCloseSlider = () => {
     setSliderIsOpen(false);
   };
@@ -107,6 +115,7 @@ const useMyChats = () => {
     }
   };
 
+  //------------------------- handel add the user into chat--------------------
   const handelAccessChat = async (userId) => {
     try {
       setAccessLoading(true);
@@ -124,10 +133,6 @@ const useMyChats = () => {
       setAccessLoading(false);
     }
   };
-
-  const { chats, selectedChat, groupChatFormModel } = useSelector(
-    (store) => store.chatStore
-  );
 
   //-------------------------------------------------- my chat component -----------------------------------------
 
@@ -162,7 +167,41 @@ const useMyChats = () => {
     }
   }, []);
 
-  const handelSendMessage = async () => {};
+  //-------------------handel fetch all chats---------------------
+  const handleFetchAllChats = async () => {
+    try {
+      const response = await instance.get(
+        `messages?chatId=${selectedChat._id}`
+      );
+      console.log(response);
+      if (response.status === 200) {
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+    }
+  };
+
+  //-------------------- handel send message --------------------
+  const handelSendMessage = async (data) => {
+    setSendingMessage(true);
+    try {
+      const response = await instance.post("messages", {
+        ...data,
+        chatId: selectedChat._id,
+      });
+      console.log(response);
+
+      if (response.status === 200) {
+        handleFetchAllChats();
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setSendingMessage(false);
+      reset();
+    }
+  };
 
   return {
     handelFetchChats,
@@ -190,6 +229,7 @@ const useMyChats = () => {
     handelInputChange,
     handelRemoveSelectedUser,
     handelSendMessage,
+    sendingMessage,
   };
 };
 

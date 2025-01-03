@@ -7,7 +7,14 @@ import useMyChats from "../../hooks/useMyChats";
 
 const ChatBox = () => {
   const { toggle, handelToggleChatTypePopup } = useChatBox();
-  const { handelInputChange, modelSearch } = useMyChats();
+  const {
+    handelInputChange,
+    modelSearch,
+    register,
+    handleSubmit,
+    handelSendMessage,
+    sendingMessage,
+  } = useMyChats();
 
   return (
     <div className="w-[65%] h-full bg-slate-100 rounded-md p-2">
@@ -19,16 +26,27 @@ const ChatBox = () => {
 
       <div className=" bg-slate-300 h-[74vh] px-2 rounded-lg z-0">
         <div className=" h-full w-full  "></div>
-        <form className="flex items-center gap-2 h-[6vh]">
+        <form
+          onSubmit={handleSubmit(handelSendMessage)}
+          className="flex items-center gap-2 h-[6vh]"
+        >
           <input
-            onChange={handelInputChange}
             name="message"
             className="w-full bg-transparent py-2 outline-none"
             type="text"
             placeholder="Send a message"
-            value={modelSearch?.message}
+            {...register("content", {
+              required: "Message is required",
+            })}
           />
-          <button className="bg-transparent font-medium ">Send</button>
+
+          {sendingMessage ? (
+            <span className="btn bg-transparent font-medium ">Sending...</span>
+          ) : (
+            <button type="submit" className="btn bg-transparent font-medium ">
+              Send
+            </button>
+          )}
         </form>
       </div>
     </div>
