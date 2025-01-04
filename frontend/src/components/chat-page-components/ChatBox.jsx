@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IoEye } from "react-icons/io5";
 
 import { ShowChatType } from "../index";
 import useChatBox from "../../hooks/useChatBox";
 import useMyChats from "../../hooks/useMyChats";
+import MessageBox from "./chatBox-components/MessageBox";
 
 const ChatBox = () => {
+  const [loginUser, setLoginUser] = useState(null);
   const { toggle, handelToggleChatTypePopup } = useChatBox();
   const {
     handelInputChange,
@@ -14,7 +16,15 @@ const ChatBox = () => {
     handleSubmit,
     handelSendMessage,
     sendingMessage,
+    chatMessages,
   } = useMyChats();
+
+  useEffect(() => {
+    const localStorageData = JSON.parse(localStorage.getItem("userInfo"));
+    if (localStorageData) {
+      setLoginUser(localStorageData);
+    }
+  }, []);
 
   return (
     <div className="w-[65%] h-full bg-slate-100 rounded-md p-2">
@@ -25,7 +35,7 @@ const ChatBox = () => {
       {toggle ? <ShowChatType handelToggle={handelToggleChatTypePopup} /> : ""}
 
       <div className=" bg-slate-300 h-[74vh] px-2 rounded-lg z-0">
-        <div className=" h-full w-full  "></div>
+        <MessageBox chatMessages={chatMessages} />
         <form
           onSubmit={handleSubmit(handelSendMessage)}
           className="flex items-center gap-2 h-[6vh]"

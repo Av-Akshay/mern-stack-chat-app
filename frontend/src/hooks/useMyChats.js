@@ -36,6 +36,7 @@ const useMyChats = () => {
   const [selectToGroupChat, setSelectToGroupChat] = useState([]);
   const [modelSearch, setModelSearch] = useState(initialValue);
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
 
   //---------------------- redux-toolkit store data --------------------------
   const { chats, selectedChat, groupChatFormModel } = useSelector(
@@ -169,21 +170,30 @@ const useMyChats = () => {
 
   //-------------------handel fetch all chats---------------------
   const handleFetchAllChats = async () => {
+    const queryParams = {
+      chatId: `${selectedChat._id}`,
+    };
     try {
-      const response = await instance.get(
-        `messages?chatId=${selectedChat._id}`
-      );
+      const response = await instance.post(`messages/${selectedChat._id}`);
       console.log(response);
       if (response.status === 200) {
+        setChatMessages(response?.data);
       }
     } catch (error) {
       console.log(error);
     } finally {
     }
   };
+  useEffect(() => {
+    if (selectedChat._id) {
+      handleFetchAllChats();
+    }
+  }, [selectedChat]);
 
   //-------------------- handel send message --------------------
   const handelSendMessage = async (data) => {
+    console.log(selectedChat._id);
+
     setSendingMessage(true);
     try {
       const response = await instance.post("messages", {
@@ -230,6 +240,7 @@ const useMyChats = () => {
     handelRemoveSelectedUser,
     handelSendMessage,
     sendingMessage,
+    chatMessages,
   };
 };
 

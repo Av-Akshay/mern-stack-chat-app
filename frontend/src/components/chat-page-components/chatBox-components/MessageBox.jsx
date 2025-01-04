@@ -1,0 +1,7 @@
+import React from "react";
+
+const MessageBox = () => {
+  return <div className=" h-full w-full  "></div>;
+};
+
+export default MessageBox;
