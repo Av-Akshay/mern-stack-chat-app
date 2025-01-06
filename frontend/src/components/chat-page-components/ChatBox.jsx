@@ -17,6 +17,7 @@ const ChatBox = () => {
     handelSendMessage,
     sendingMessage,
     chatMessages,
+    selectedChat,
   } = useMyChats();
 
   useEffect(() => {
@@ -29,7 +30,11 @@ const ChatBox = () => {
   return (
     <div className="w-[65%] h-full bg-slate-100 rounded-md p-2">
       <div className="h-[8vh] flex items-center justify-between w-[95%] mx-auto">
-        <h1 className="text-xl font-medium">Akshay Chauhan</h1>
+        <h1 className="text-xl font-medium capitalize">
+          {selectedChat?.isGroupChat
+            ? selectedChat?.chatName
+            : selectedChat?.chatName}
+        </h1>
         <IoEye onClick={handelToggleChatTypePopup} className="text-2xl" />
       </div>
       {toggle ? <ShowChatType handelToggle={handelToggleChatTypePopup} /> : ""}

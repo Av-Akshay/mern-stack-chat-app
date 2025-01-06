@@ -241,6 +241,7 @@ const useMyChats = () => {
     handelSendMessage,
     sendingMessage,
     chatMessages,
+    userInfo,
   };
 };
 
