@@ -3,7 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const chatSlice = createSlice({
   name: "chat App",
   initialState: {
-    selectedChat: {},
+    selectedChat: null,
     chats: [],
     groupChatFormModel: false,
   },
@@ -32,8 +32,6 @@ const chatSlice = createSlice({
           return item;
         }
       });
-      console.log(allChats);
-
       state.chats = allChats;
     },
   },

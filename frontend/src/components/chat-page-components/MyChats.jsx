@@ -41,7 +41,7 @@ const MyChats = () => {
                 dispatch(handelSelectedChat(chat));
               }}
               className={`${
-                selectedChat._id === chat._id
+                selectedChat?._id === chat?._id
                   ? "bg-blue-500 text-white"
                   : "bg-slate-200 text-black"
               } p-2 h-full rounded-md overflow-auto`}

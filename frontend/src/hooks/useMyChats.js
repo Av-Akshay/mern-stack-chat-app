@@ -149,7 +149,6 @@ const useMyChats = () => {
     try {
       setLoading(true);
       const response = await axios.get("chat");
-      console.log(response);
 
       if (response?.statusText === "OK") {
         dispatch(handelAddChats(response?.data));
@@ -175,7 +174,7 @@ const useMyChats = () => {
     };
     try {
       const response = await instance.post(`messages/${selectedChat._id}`);
-      console.log(response);
+
       if (response.status === 200) {
         setChatMessages(response?.data);
       }
@@ -185,7 +184,7 @@ const useMyChats = () => {
     }
   };
   useEffect(() => {
-    if (selectedChat._id) {
+    if (selectedChat?._id) {
       handleFetchAllChats();
     }
   }, [selectedChat]);
