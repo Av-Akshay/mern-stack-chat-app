@@ -6,8 +6,12 @@ const chatSlice = createSlice({
     selectedChat: null,
     chats: [],
     groupChatFormModel: false,
+    user: null,
   },
   reducers: {
+    handleSaveUser: (state, action) => {
+      state.user = action.payload;
+    },
     handelSelectedChat: (state, action) => {
       state.selectedChat = action?.payload;
     },
@@ -38,6 +42,7 @@ const chatSlice = createSlice({
 });
 
 export const {
+  handleSaveUser,
   handelSelectedChat,
   handelAddNewChat,
   handelAddChats,

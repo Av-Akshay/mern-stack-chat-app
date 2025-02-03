@@ -1,6 +1,7 @@
 import { useSelector, useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import io from "socket.io-client";
 
 import axios from "../axiosInstance";
 import {
@@ -10,8 +11,10 @@ import {
   handelAddGroupChat,
 } from "../store/slice";
 import instance from "../axiosInstance";
+import useSocket from "./useSocket";
 
 const useMyChats = () => {
+  const { socket } = useSocket();
   const dispatch = useDispatch();
   const hasFetched = useRef(false);
   const {
@@ -26,6 +29,7 @@ const useMyChats = () => {
     chats: "",
     message: "",
   };
+  const selectedChatRef = useRef(null);
 
   // ---------------------------states-------------------------
   const [loading, setLoading] = useState(false);
@@ -37,11 +41,21 @@ const useMyChats = () => {
   const [modelSearch, setModelSearch] = useState(initialValue);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
+  const [socketConnected, setSocketConnected] = useState(false);
 
   //---------------------- redux-toolkit store data --------------------------
-  const { chats, selectedChat, groupChatFormModel } = useSelector(
+  const { chats, selectedChat, groupChatFormModel, user } = useSelector(
     (store) => store.chatStore
   );
+
+  // --------------------- connect socket io ------------------------------
+  useEffect(() => {
+    // console.log("fire event");
+    socket.emit("setup", user);
+    socket.on("connected", () => {
+      setSocketConnected(true);
+    });
+  }, []);
 
   //------------------------------------ create group chat component------------------------------
 
@@ -167,32 +181,34 @@ const useMyChats = () => {
     }
   }, []);
 
-  //-------------------handel fetch all chats---------------------
-  const handleFetchAllChats = async () => {
-    const queryParams = {
-      chatId: `${selectedChat._id}`,
-    };
+  //-------------------handel fetch all chats messages---------------------
+
+  const handleFetchAllChats = useCallback(async () => {
+    // const queryParams = {
+    //   chatId: `${selectedChat._id}`,
+    // };
     try {
-      const response = await instance.post(`messages/${selectedChat._id}`);
+      const response = await instance.get(`messages/${selectedChat._id}`);
 
       if (response.status === 200) {
         setChatMessages(response?.data);
+        socket.emit("join chat", selectedChat._id);
       }
     } catch (error) {
       console.log(error);
     } finally {
     }
-  };
+  }, [selectedChat]);
+
   useEffect(() => {
     if (selectedChat?._id) {
+      selectedChatRef.current = selectedChat;
       handleFetchAllChats();
     }
   }, [selectedChat]);
 
   //-------------------- handel send message --------------------
   const handelSendMessage = async (data) => {
-    console.log(selectedChat._id);
-
     setSendingMessage(true);
     try {
       const response = await instance.post("messages", {
@@ -203,6 +219,7 @@ const useMyChats = () => {
 
       if (response.status === 200) {
         handleFetchAllChats();
+        socket.emit("new_message", response?.data);
       }
     } catch (error) {
       console.log(error);
@@ -212,6 +229,26 @@ const useMyChats = () => {
     }
   };
 
+  useEffect(() => {
+    socket.on("message received", (newMessageReceived) => {
+      console.log(newMessageReceived);
+
+      if (
+        !selectedChatRef.current || // No selected chat
+        selectedChatRef.current._id !== newMessageReceived?.chat?._id
+      ) {
+        // give notification
+      } else {
+        setChatMessages((prevMessages) => [
+          ...prevMessages,
+          newMessageReceived,
+        ]);
+      }
+    });
+    return () => {
+      socket.off("message received"); // Clean up the listener when component unmounts
+    };
+  }, [socket]);
   return {
     handelFetchChats,
     chats,
@@ -241,6 +278,8 @@ const useMyChats = () => {
     sendingMessage,
     chatMessages,
     userInfo,
+    io,
+    socket,
   };
 };
 

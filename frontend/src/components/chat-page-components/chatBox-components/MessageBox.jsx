@@ -5,8 +5,8 @@ const MessageBox = ({ chatMessages }) => {
   const { userInfo } = useMyChats();
 
   return (
-    <div className="h-full w-full fex !flex-col gap-5 py-2">
-      <div className={`w-full h-full flex flex-col gap-1`}>
+    <div className="h-full w-full fex !flex-col gap-5 py-2 overflow-y-auto">
+      <div className={`w-full h-full flex flex-col gap-1 my-1`}>
         {chatMessages?.map((messages) => {
           return (
             <div

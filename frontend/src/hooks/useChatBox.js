@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "../axiosInstance";
 
+import axios from "../axiosInstance";
 import useMyChats from "./useMyChats";
 import { handelSelectedChat } from "../store/slice";
 
@@ -18,7 +18,7 @@ const useChatBox = () => {
   const [updateGroupChat, setUpdateGroupChat] = useState(initialValue);
   const [toggle, setToggle] = useState(false);
 
-  //======================group name change handler===========================
+  //====================== change group name ===========================
 
   const handelChangeTheGroupName = async (chatId) => {
     try {
@@ -50,6 +50,7 @@ const useChatBox = () => {
     setToggle(!toggle);
   };
 
+  //  ---------------add user to group--------------
   const handelAddToGroup = async (userId) => {
     try {
       const response = await axios.post("chat/groupadd", {
