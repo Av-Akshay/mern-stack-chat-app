@@ -2,8 +2,12 @@ import { useForm } from "react-hook-form";
 import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+
+import { handleSaveUser } from "../store/slice";
 
 const useLogin = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -18,8 +22,8 @@ const useLogin = () => {
     try {
       setIsLoading(true);
       const res = await axios.post("/api/user/login", data);
-      console.log(res);
       if (res?.statusText === "OK") {
+        dispatch(handleSaveUser(res.data));
         localStorage.setItem("userInfo", JSON.stringify(res.data));
         navigate("/chats");
       }

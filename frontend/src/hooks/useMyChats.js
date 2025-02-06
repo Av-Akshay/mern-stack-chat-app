@@ -1,6 +1,7 @@
 import { useSelector, useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import io from "socket.io-client";
 
 import axios from "../axiosInstance";
 import {
@@ -10,8 +11,11 @@ import {
   handelAddGroupChat,
 } from "../store/slice";
 import instance from "../axiosInstance";
+import useSocket from "./useSocket";
+import { current } from "@reduxjs/toolkit";
 
 const useMyChats = () => {
+  const { socket } = useSocket();
   const dispatch = useDispatch();
   const hasFetched = useRef(false);
   const {
@@ -37,11 +41,35 @@ const useMyChats = () => {
   const [modelSearch, setModelSearch] = useState(initialValue);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
+  const [socketConnected, setSocketConnected] = useState(false);
 
   //---------------------- redux-toolkit store data --------------------------
-  const { chats, selectedChat, groupChatFormModel } = useSelector(
+  const { chats, selectedChat, groupChatFormModel, user } = useSelector(
     (store) => store.chatStore
   );
+
+  // --------------------- connect socket io ------------------------------
+  useEffect(() => {
+    socket.emit("setup", user);
+    socket.on("connected", () => {
+      setSocketConnected(true);
+    });
+  }, []);
+  useEffect(() => {
+    socket.on("message_received", (newMessageReceived) => {
+      if (selectedChat) {
+        if (selectedChat._id !== newMessageReceived?.chatId?._id) {
+          // give notification
+        } else {
+          console.log(selectedChat);
+          setChatMessages((prevMessages) => [
+            ...prevMessages,
+            newMessageReceived,
+          ]);
+        }
+      }
+    });
+  }, [selectedChat]);
 
   //------------------------------------ create group chat component------------------------------
 
@@ -167,22 +195,25 @@ const useMyChats = () => {
     }
   }, []);
 
-  //-------------------handel fetch all chats---------------------
-  const handleFetchAllChats = async () => {
-    const queryParams = {
-      chatId: `${selectedChat._id}`,
-    };
+  //-------------------handel fetch all chats messages---------------------
+
+  const handleFetchAllChats = useCallback(async () => {
+    // const queryParams = {
+    //   chatId: `${selectedChat._id}`,
+    // };
     try {
-      const response = await instance.post(`messages/${selectedChat._id}`);
+      const response = await instance.get(`messages/${selectedChat._id}`);
 
       if (response.status === 200) {
         setChatMessages(response?.data);
+        socket.emit("join chat", selectedChat._id);
       }
     } catch (error) {
       console.log(error);
     } finally {
     }
-  };
+  }, [selectedChat]);
+
   useEffect(() => {
     if (selectedChat?._id) {
       handleFetchAllChats();
@@ -191,18 +222,16 @@ const useMyChats = () => {
 
   //-------------------- handel send message --------------------
   const handelSendMessage = async (data) => {
-    console.log(selectedChat._id);
-
     setSendingMessage(true);
     try {
       const response = await instance.post("messages", {
         ...data,
         chatId: selectedChat._id,
       });
-      console.log(response);
 
       if (response.status === 200) {
         handleFetchAllChats();
+        socket.emit("new_message", response?.data);
       }
     } catch (error) {
       console.log(error);
@@ -241,6 +270,8 @@ const useMyChats = () => {
     sendingMessage,
     chatMessages,
     userInfo,
+    io,
+    socket,
   };
 };
 
