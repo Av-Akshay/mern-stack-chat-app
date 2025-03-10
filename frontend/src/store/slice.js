@@ -7,6 +7,8 @@ const chatSlice = createSlice({
     chats: [],
     groupChatFormModel: false,
     user: null,
+    notifiaction: [],
+    fetchUsersChats : false
   },
   reducers: {
     handleSaveUser: (state, action) => {
@@ -38,6 +40,12 @@ const chatSlice = createSlice({
       });
       state.chats = allChats;
     },
+    addNotifiation: (state, action) => {
+      state.notifiaction = [...state.notifiaction, action.payload];
+    },
+    handelFetchUsersChat :(state,action)=>{
+      state.fetchChats = state.fetchChats? false:true;
+    }
   },
 });
 
@@ -49,6 +57,8 @@ export const {
   handelAddGroupChat,
   handelToggleGroupChatModel,
   changeTheGroupName,
+  addNotifiation,
+  handelFetchUsersChat
 } = chatSlice.actions;
 
 export default chatSlice;

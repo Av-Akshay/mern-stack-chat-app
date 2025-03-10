@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import axios from "../axiosInstance";
 import useMyChats from "./useMyChats";
-import { handelSelectedChat } from "../store/slice";
+import { handelFetchUsersChat, handelSelectedChat } from "../store/slice";
 
 const useChatBox = () => {
   const { handelFetchChats, userChat, submitForm } = useMyChats();
@@ -27,7 +27,7 @@ const useChatBox = () => {
         chatName: updateGroupChat?.groupName,
       });
       if (response?.statusText === "OK") {
-        handelFetchChats();
+        dispatch(handelFetchUsersChat());
         alert("group name changes sussesfully");
         setToggle(!toggle);
       }
@@ -60,7 +60,7 @@ const useChatBox = () => {
 
       if (response?.statusText === "OK") {
         dispatch(handelSelectedChat(response?.data));
-        handelFetchChats();
+        dispatch(handelFetchUsersChat());
       }
     } catch (error) {
       console.log(`error on adding user to group chat ${error}`);

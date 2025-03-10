@@ -9,10 +9,12 @@ import {
   handelAddNewChat,
   handelAddChats,
   handelAddGroupChat,
+  addNotifiation,
+  handelFetchUsersChat
 } from "../store/slice";
 import instance from "../axiosInstance";
 import useSocket from "./useSocket";
-import { current } from "@reduxjs/toolkit";
+
 
 const useMyChats = () => {
   const { socket } = useSocket();
@@ -42,9 +44,10 @@ const useMyChats = () => {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
   const [socketConnected, setSocketConnected] = useState(false);
-
+  const [typing,setTyping] = useState(false);
+  const [isTyping,setIsTyping] = useState(false)
   //---------------------- redux-toolkit store data --------------------------
-  const { chats, selectedChat, groupChatFormModel, user } = useSelector(
+  const { chats, selectedChat, groupChatFormModel, user,notifiaction,fetchUsersChats} = useSelector(
     (store) => store.chatStore
   );
 
@@ -54,12 +57,22 @@ const useMyChats = () => {
     socket.on("connected", () => {
       setSocketConnected(true);
     });
+    socket.on("typing",()=>setIsTyping(true))
+    socket.on("stop typing",()=>setIsTyping(false))
   }, []);
+
+  // ------------sending message or notifiacation----------------
   useEffect(() => {
     socket.on("message_received", (newMessageReceived) => {
       if (selectedChat) {
-        if (selectedChat._id !== newMessageReceived?.chatId?._id) {
-          // give notification
+        if (selectedChat || selectedChat._id !== newMessageReceived?.chatId?._id) {
+          
+          if(!notifiaction.includes(newMessageReceived)){
+            console.log(newMessageReceived);
+            dispatch(addNotifiation(newMessageReceived));
+            dispatch(handelFetchUsersChat());
+          }
+
         } else {
           console.log(selectedChat);
           setChatMessages((prevMessages) => [
@@ -70,8 +83,6 @@ const useMyChats = () => {
       }
     });
   }, [selectedChat]);
-
-  //------------------------------------ create group chat component------------------------------
 
   //================== add user into group chat====================
   const handelAddToGroup = (item) => {
@@ -126,7 +137,10 @@ const useMyChats = () => {
     setSliderIsOpen(true);
   };
 
+  // ------------------- handel search user -----------------------
   const submitForm = async (data) => {
+    
+    
     try {
       setLoading(true);
       const response = await instance.get(`user?search=${data?.chats}`);
@@ -138,7 +152,6 @@ const useMyChats = () => {
       }
     } catch (error) {
       console.log(error);
-
       setLoading(false);
       setMessage(error.message);
     }
@@ -193,14 +206,11 @@ const useMyChats = () => {
       handelFetchChats();
       hasFetched.current = true;
     }
-  }, []);
+  }, [fetchUsersChats]);
 
   //-------------------handel fetch all chats messages---------------------
 
   const handleFetchAllChats = useCallback(async () => {
-    // const queryParams = {
-    //   chatId: `${selectedChat._id}`,
-    // };
     try {
       const response = await instance.get(`messages/${selectedChat._id}`);
 
@@ -241,6 +251,27 @@ const useMyChats = () => {
     }
   };
 
+  // ---------------------- handel typing message -------------------
+  const handelChangeMessage = (event)=>{
+    const {value} = event.target;
+   if(!socketConnected) return;
+   if(!typing){
+    setTyping(true);
+    socket.emit("typing",selectedChat._id);
+   };
+   let lastTypingTime = new Date().getTime();
+   var timeLength = 3000;
+   setTimeout(()=>{
+    var timeNow = new Date().getTime();
+    var timeDiff = timeNow - lastTypingTime;
+    if(timeDiff >= timeLength && typing){
+      socket.emit("stop typing", selectedChat._id);
+      setTyping(false);
+    }
+   },timeLength)
+     
+  }
+
   return {
     handelFetchChats,
     chats,
@@ -272,6 +303,8 @@ const useMyChats = () => {
     userInfo,
     io,
     socket,
+    handelChangeMessage,
+    isTyping
   };
 };
 

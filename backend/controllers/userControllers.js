@@ -69,8 +69,11 @@ const allUsers = asyncHandler(async (req, res) => {
   if (!keyword) {
     return res.send([]);
   }
+  
   // If there's a search query, proceed with the database search
   const users = await User.find(keyword).find({ _id: { $ne: req.user._id } });
+  
+  
   res.send(users);
 });
 

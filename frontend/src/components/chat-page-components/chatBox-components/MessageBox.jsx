@@ -1,12 +1,33 @@
-import React from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import useMyChats from "../../../hooks/useMyChats";
+import Lottie from 'react-lottie';
+import animationData from "../../../animation/animation.json"
 
-const MessageBox = ({ chatMessages }) => {
+const MessageBox = ({ chatMessages, isTyping}) => {
   const { userInfo } = useMyChats();
+  const messagesEndRef =useRef(null);
+  const defaultOptions = {
+    loop: true,
+    autoplay: true, 
+    animationData: animationData,
+    rendererSettings: {
+      preserveAspectRatio: 'xMidYMid slice'
+    }
+  };
+
+  const scrollToBottom = useCallback(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+    }
+  },[chatMessages,isTyping])
+
+  useEffect(()=>{
+    scrollToBottom();
+  },[chatMessages,isTyping])
 
   return (
-    <div className="h-full w-full fex !flex-col gap-5 py-2 overflow-y-auto">
-      <div className={`w-full h-full flex flex-col gap-1 my-1`}>
+   
+      <div ref={messagesEndRef} className={`w-full h-full flex flex-col gap-1 my-1 p-1 overflow-y-auto`}>
         {chatMessages?.map((messages) => {
           return (
             <div
@@ -29,8 +50,11 @@ const MessageBox = ({ chatMessages }) => {
             </div>
           );
         })}
+        {
+          isTyping && <p className="font-thin text-sm">typing...</p>
+        }
       </div>
-    </div>
+   
   );
 };
 

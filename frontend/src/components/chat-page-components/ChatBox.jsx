@@ -19,6 +19,8 @@ const ChatBox = () => {
     chatMessages,
     selectedChat,
     getSender,
+    handelChangeMessage,
+    isTyping
   } = useMyChats();
 
   useEffect(() => {
@@ -43,18 +45,22 @@ const ChatBox = () => {
       {toggle ? <ShowChatType handelToggle={handelToggleChatTypePopup} /> : ""}
 
       <div className=" bg-slate-300 h-[74vh] px-2 rounded-lg z-0">
-        <MessageBox chatMessages={chatMessages} />
+        <MessageBox isTyping={isTyping} chatMessages={chatMessages} />
         <form
           onSubmit={handleSubmit(handelSendMessage)}
           className="flex items-center gap-2 h-[6vh]"
         >
           <input
+        
             name="message"
             className="w-full bg-transparent py-2 outline-none"
             type="text"
             placeholder="Send a message"
             {...register("content", {
               required: "Message is required",
+              onChange: (e) => {
+                handelChangeMessage(e)
+              },
             })}
           />
 
