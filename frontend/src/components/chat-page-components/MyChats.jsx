@@ -2,7 +2,6 @@ import React from "react";
 
 import useMyChats from "../../hooks/useMyChats";
 import {
-  handelSelectedChat,
   handelToggleGroupChatModel,
 } from "../../store/slice";
 import CreateGroupChat from "./mychats-component/CreateGroupChat";
@@ -16,6 +15,7 @@ const MyChats = () => {
     handelFetchChats,
     loading,
     selectedChat,
+    handleSelectChat,
   } = useMyChats();
 
   return (
@@ -38,7 +38,7 @@ const MyChats = () => {
             <div
               key={chat._id}
               onClick={() => {
-                dispatch(handelSelectedChat(chat));
+                handleSelectChat(chat);
               }}
               className={`${
                 selectedChat?._id === chat?._id

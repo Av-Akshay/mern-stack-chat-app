@@ -2,3 +2,9 @@
 ./backend/.env
 /backend/.env
 /backend/node_modules
+/frontend/.cursorrules
+/frontend/.env
+/frontend/.env.local
+/frontend/.env.development.local
+/frontend/.env.test.local
+/frontend/.env.production.local

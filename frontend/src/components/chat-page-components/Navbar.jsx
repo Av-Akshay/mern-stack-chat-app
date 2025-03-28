@@ -3,6 +3,7 @@ import chatBackground from "../../assets/images/chatAppBackground.avif";
 import Slider from "./navbar-component/Slider";
 import DropDown from "./navbar-component/DropDown";
 import Popup from "./navbar-component/Popup";
+import NotificationBadge from "./navbar-component/NotificationBadge";
 import useMyChats from "../../hooks/useMyChats";
 
 const Navbar = () => {
@@ -48,7 +49,8 @@ const Navbar = () => {
           <div>
             <h1 className="text-white">Talk-A-Tive</h1>
           </div>
-          <div className="relative">
+          <div className="relative flex items-center gap-2">
+            <NotificationBadge />
             <button
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}

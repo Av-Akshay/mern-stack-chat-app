@@ -43,6 +43,12 @@ const chatSlice = createSlice({
     addNotifiation: (state, action) => {
       state.notifiaction = [...state.notifiaction, action.payload];
     },
+    clearNotification: (state, action) => {
+      // Remove notification by chatId
+      state.notifiaction = state.notifiaction.filter(
+        notification => notification.chatId._id !== action.payload
+      );
+    },
     handelFetchUsersChat :(state,action)=>{
       state.fetchChats = state.fetchChats? false:true;
     }
@@ -58,6 +64,7 @@ export const {
   handelToggleGroupChatModel,
   changeTheGroupName,
   addNotifiation,
+  clearNotification,
   handelFetchUsersChat
 } = chatSlice.actions;
 

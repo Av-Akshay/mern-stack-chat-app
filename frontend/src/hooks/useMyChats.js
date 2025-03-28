@@ -10,14 +10,17 @@ import {
   handelAddChats,
   handelAddGroupChat,
   addNotifiation,
+  clearNotification,
   handelFetchUsersChat
 } from "../store/slice";
 import instance from "../axiosInstance";
 import useSocket from "./useSocket";
+import useSound from "./useSound";
 
 
 const useMyChats = () => {
   const { socket } = useSocket();
+  const { playNotificationSound } = useSound();
   const dispatch = useDispatch();
   const hasFetched = useRef(false);
   const {
@@ -64,25 +67,32 @@ const useMyChats = () => {
   // ------------sending message or notifiacation----------------
   useEffect(() => {
     socket.on("message_received", (newMessageReceived) => {
-      if (selectedChat) {
-        if (selectedChat || selectedChat._id !== newMessageReceived?.chatId?._id) {
+      // If no selected chat or the message is from a different chat than the selected one
+      if (!selectedChat || selectedChat._id !== newMessageReceived.chatId._id) {
+        // Check if this notification is not already in the array
+        const notificationExists = notifiaction.some(
+          n => n._id === newMessageReceived._id
+        );
+        
+        if (!notificationExists) {
+          // Play sound notification
+          playNotificationSound();
           
-          if(!notifiaction.includes(newMessageReceived)){
-            console.log(newMessageReceived);
-            dispatch(addNotifiation(newMessageReceived));
-            dispatch(handelFetchUsersChat());
-          }
-
-        } else {
-          console.log(selectedChat);
-          setChatMessages((prevMessages) => [
-            ...prevMessages,
-            newMessageReceived,
-          ]);
+          // Add notification and trigger chat list refresh to update latest messages
+          dispatch(addNotifiation(newMessageReceived));
+          dispatch(handelFetchUsersChat());
         }
+      } else {
+        // Message is for the currently selected chat, just add it to the current messages
+        setChatMessages(prevMessages => [...prevMessages, newMessageReceived]);
       }
     });
-  }, [selectedChat]);
+    
+    // Cleanup
+    return () => {
+      socket.off("message_received");
+    };
+  }, [selectedChat, notifiaction, playNotificationSound]);
 
   //================== add user into group chat====================
   const handelAddToGroup = (item) => {
@@ -272,6 +282,15 @@ const useMyChats = () => {
      
   }
 
+  const handleSelectChat = (chat) => {
+    dispatch(handelSelectedChat(chat));
+    
+    // Clear notifications for this chat when selected
+    if (chat && chat._id) {
+      dispatch(clearNotification(chat._id));
+    }
+  };
+
   return {
     handelFetchChats,
     chats,
@@ -304,7 +323,8 @@ const useMyChats = () => {
     io,
     socket,
     handelChangeMessage,
-    isTyping
+    isTyping,
+    handleSelectChat
   };
 };
 
