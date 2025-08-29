@@ -2,7 +2,6 @@ import React, { useEffect } from "react";
 
 import useMyChats from "../../../hooks/useMyChats";
 import UsersChats from "../navbar-component/slider-component/UsersChats";
-import { handelToggleGroupChatModel } from "../../../store/slice";
 
 const CreateGroupChat = () => {
   const {
@@ -10,11 +9,11 @@ const CreateGroupChat = () => {
     userChat,
     handelAddToGroup,
     handelCreateGroupChat,
+    handelCloseGroupChatModal,
     selectToGroupChat,
     modelSearch,
     handelInputChange,
     handelRemoveSelectedUser,
-    dispatch,
   } = useMyChats();
 
   useEffect(() => {
@@ -28,15 +27,13 @@ const CreateGroupChat = () => {
   }, [modelSearch]);
 
   return (
-    <div className="absolute top-0 left-0 h-screen w-full bg-[rgba(0,0,0,0.8)] flex items-center justify-center">
-      <div className="relative w-[50%] bg-white p-14 rounded-lg flex flex-col gap-3 items-center justify-center">
+    <div className="fixed inset-0 z-50 bg-[rgba(0,0,0,0.8)] flex items-center justify-center">
+      <div className="relative w-[90%] md:w-[70%] lg:w-[50%] bg-white p-6 md:p-10 lg:p-14 rounded-lg flex flex-col gap-3 items-center justify-center max-h-[90vh] overflow-auto">
         <h1 className="text-2xl font-medium m-0">Create Group Chat</h1>
 
         {/* close button */}
         <button
-          onClick={() => {
-            dispatch(handelToggleGroupChatModel());
-          }}
+          onClick={handelCloseGroupChatModal}
           className="absolute top-5 right-5 text-xl font-medium"
         >
           X
@@ -95,7 +92,7 @@ const CreateGroupChat = () => {
           <div
             className={`${
               userChat.length > 0
-                ? "bg-white top-[5.2rem] mt-1 w-full h-[32vh] rounded-md overflow-auto flex flex-col gap-2 z-10 "
+                ? "absolute bg-white top-[5.2rem] mt-1 w-full h-[32vh] rounded-md overflow-auto flex flex-col gap-2 z-20 shadow-lg"
                 : "hidden"
             }`}
           >

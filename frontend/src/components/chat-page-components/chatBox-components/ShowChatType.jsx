@@ -2,6 +2,7 @@ import React from "react";
 
 import UsersChats from "../navbar-component/slider-component/UsersChats";
 import useChatBox from "../../../hooks/useChatBox";
+import useMyChats from "../../../hooks/useMyChats";
 
 const ShowChatType = ({ handelToggle }) => {
   const {
@@ -12,121 +13,207 @@ const ShowChatType = ({ handelToggle }) => {
     userChat,
     handelAddToGroup,
   } = useChatBox();
+  
+  const { userInfo, getSenderFull } = useMyChats();
 
   return (
     <div
       className={`${
         selectedChat &&
-        "absolute z-20 left-0 top-0 flex items-center justify-center w-[100vw] h-[100vh] bg-[rgba(0,0,0,0.4)]"
+        "fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
       }`}
     >
       {selectedChat && (
-        <div className="relative w-[80%] h-[90vh] bg-white rounded-xl shadow-xl shadow-black p-5">
-          <div className="z-30 text-end">
+        <div className="relative w-full max-w-6xl h-[90vh] md:h-[85vh] bg-white rounded-xl shadow-2xl overflow-hidden">
+          <div className="absolute top-4 right-4 z-30">
             <button
               onClick={handelToggle}
-              className="font-semibold text-lg border-2 px-2 py-1 rounded-md"
+              className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-lg w-10 h-10 rounded-full flex items-center justify-center transition-colors"
             >
-              X
+              ✕
             </button>
           </div>
           {selectedChat?.isGroupChat ? (
-            <div className="absolute top-16 w-full flex items-center justify-center flex-col gap-5">
-              <h1 className="capitalize">
-                chat name:- <span>{selectedChat?.chatName}</span>
-              </h1>
-              <div className="capitalize flex gap-2">
-                group chat users:-
-                <div className="flex items-center flex-wrap gap-2">
-                  {selectedChat?.users?.map((item) => {
-                    return (
-                      <div
-                        key={item._id}
-                        className="bg-violet-500 inline-block px-5 py-1 rounded-md relative text-white "
-                      >
-                        {item.name}
-                        <button
-                          // onClick={() => {
-                          //   handelRemoveSelectedUser(item._id);
-                          // }}
-                          className="absolute -top-1 right-1 border-none outline-none bg-transparent ml-1"
-                        >
-                          x
-                        </button>
-                      </div>
-                    );
-                  })}
+            <div className="w-full h-full overflow-auto p-4 sm:p-6 lg:p-8">
+              <h2 className="text-xl sm:text-2xl font-bold text-center mb-4 sm:mb-6 text-gray-800 mt-8 sm:mt-0">Group Chat Information</h2>
+              
+              <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+                {/* Group Name Section */}
+                <div className="bg-gray-50 p-4 sm:p-6 rounded-lg">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-700 mb-2">Group Name</h3>
+                  <p className="text-lg sm:text-xl text-gray-900 break-words">{selectedChat?.chatName}</p>
                 </div>
-              </div>
-              <div className="grid w-fit gap-5 grid-cols-2 grid-rows-1">
-                <div className="flex flex-col gap-2 bg-gray-200 p-2 rounded-lg">
-                  Want to change the group name:-
-                  <form
-                    className=" flex flex-col gap-2"
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      handelChangeTheGroupName(selectedChat._id);
-                    }}
-                  >
+                
+                {/* Group Members Section */}
+                <div className="bg-gray-50 p-4 sm:p-6 rounded-lg">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-700 mb-3 sm:mb-4">Group Members ({selectedChat?.users?.length})</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                    {selectedChat?.users?.map((item) => {
+                      const isCurrentUser = item._id === userInfo?._id;
+                      return (
+                        <div
+                          key={item._id}
+                          className="flex items-center bg-white p-2 sm:p-3 rounded-lg shadow-sm border border-gray-200"
+                        >
+                          <img 
+                            src={item.pic || "https://as1.ftcdn.net/v2/jpg/03/46/83/96/1000_F_346839683_6nAPzbhpSkIpb8pmAwufkC7c5eD7wYws.jpg"} 
+                            alt={item.name}
+                            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover mr-2 sm:mr-3 flex-shrink-0"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-sm sm:text-base text-gray-800 truncate">
+                              {item.name} {isCurrentUser && <span className="text-xs text-blue-500">(You)</span>}
+                            </p>
+                            <p className="text-xs text-gray-500 truncate">{item.email}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                {/* Group Management Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                  <div className="bg-gray-50 p-4 sm:p-6 rounded-lg">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-700 mb-3 sm:mb-4">Change Group Name</h3>
+                    <form
+                      className="flex flex-col gap-2 sm:gap-3"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        handelChangeTheGroupName(selectedChat._id);
+                      }}
+                    >
+                      <input
+                        onChange={(e) => {
+                          setUpdateGroupChat(() => {
+                            return {
+                              ...initialValue,
+                              groupName: e.target.value,
+                            };
+                          });
+                        }}
+                        type="text"
+                        placeholder="Enter New Name"
+                        className="px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <button
+                        className="bg-blue-500 text-white px-4 py-2 text-sm sm:text-base rounded-md hover:bg-blue-600 transition-all"
+                        type="submit"
+                      >
+                        Update Name
+                      </button>
+                    </form>
+                  </div>
+                  
+                  <div className="bg-gray-50 p-4 sm:p-6 rounded-lg">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-700 mb-3 sm:mb-4">Add New Member</h3>
                     <input
+                      name="chats"
+                      type="text"
                       onChange={(e) => {
-                        setUpdateGroupChat(() => {
+                        setUpdateGroupChat((pre) => {
                           return {
-                            ...initialValue,
-                            groupName: e.target.value,
+                            ...pre,
+                            [e.target.name]: e.target.value,
                           };
                         });
                       }}
-                      type="text"
-                      placeholder="Enter New Name"
-                      className="capitalize px-2 py-1 border-2 border-blue-500 outline-none rounded-md"
+                      placeholder="Search user by name..."
+                      className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2 sm:mb-3"
                     />
-                    <button
-                      className="border-2 outline-none border-blue-500 px-3 p-1 rounded-md hover:bg-blue-500 hover:text-white transition-all"
-                      type="submit"
+                    <div
+                      className={`${
+                        userChat.length > 0
+                          ? "bg-white border border-gray-200 rounded-md max-h-48 overflow-auto"
+                          : "hidden"
+                      }`}
                     >
-                      Change the name
-                    </button>
-                  </form>
-                </div>
-                <div className="p-2 bg-gray-200 rounded-lg flex flex-col items-center">
-                  want to add a user:-
-                  <input
-                    name="chats"
-                    type="text"
-                    onChange={(e) => {
-                      setUpdateGroupChat((pre) => {
-                        return {
-                          ...pre,
-                          [e.target.name]: e.target.value,
-                        };
-                      });
-                    }}
-                    placeholder="Add User eg. Akshay "
-                    className="border-2 w-fit border-blue-500 px-2 py-1 rounded-md"
-                  />
-                  <div
-                    className={`${
-                      userChat.length > 0
-                        ? "bg-white top-[5.2rem] mt-1 w-fit h-[32vh] rounded-md overflow-auto flex flex-col gap-2 z-10 "
-                        : "hidden"
-                    }`}
-                  >
-                    {userChat?.map((item) => {
-                      return (
-                        <UsersChats
-                          key={item._id}
-                          handelAccessChat={handelAddToGroup}
-                          item={item}
-                        />
-                      );
-                    })}
+                      {userChat?.map((item) => {
+                        return (
+                          <UsersChats
+                            key={item._id}
+                            handelAccessChat={handelAddToGroup}
+                            item={item}
+                          />
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           ) : (
-            ""
+            // Single Chat Information
+            <div className="flex flex-col items-center justify-center h-full p-4 sm:p-6 lg:p-8 overflow-auto">
+              {(() => {
+                const otherUser = getSenderFull(userInfo, selectedChat?.users);
+                return otherUser ? (
+                  <div className="w-full max-w-md mx-auto">
+                    <h2 className="text-xl sm:text-2xl font-bold text-center mb-4 sm:mb-6 text-gray-800 mt-8 sm:mt-0">Chat Information</h2>
+                    
+                    {/* User Profile Picture */}
+                    <div className="flex justify-center mb-4 sm:mb-6">
+                      <div className="relative">
+                        <img 
+                          src={otherUser.pic || "https://as1.ftcdn.net/v2/jpg/03/46/83/96/1000_F_346839683_6nAPzbhpSkIpb8pmAwufkC7c5eD7wYws.jpg"} 
+                          alt={otherUser.name}
+                          className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-blue-500 shadow-lg"
+                        />
+                        {otherUser.isOnline && (
+                          <span className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 w-5 h-5 sm:w-6 sm:h-6 bg-green-500 rounded-full border-2 sm:border-4 border-white"></span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* User Details */}
+                    <div className="space-y-3 sm:space-y-4">
+                      <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                        <p className="text-xs sm:text-sm text-gray-500 mb-1">Name</p>
+                        <p className="text-base sm:text-lg font-semibold text-gray-800 break-words">{otherUser.name}</p>
+                      </div>
+                      
+                      <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                        <p className="text-xs sm:text-sm text-gray-500 mb-1">Email</p>
+                        <p className="text-sm sm:text-lg text-gray-800 break-all">{otherUser.email}</p>
+                      </div>
+                      
+                      {otherUser.bio && (
+                        <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                          <p className="text-xs sm:text-sm text-gray-500 mb-1">Bio</p>
+                          <p className="text-sm sm:text-base text-gray-800 break-words">{otherUser.bio}</p>
+                        </div>
+                      )}
+                      
+                      <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                        <p className="text-xs sm:text-sm text-gray-500 mb-1">Status</p>
+                        <div className="flex items-center flex-wrap">
+                          <span className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full mr-2 flex-shrink-0 ${otherUser.isOnline ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+                          <p className="text-sm sm:text-base text-gray-800">
+                            {otherUser.isOnline ? 'Online' : `Last seen ${otherUser.lastSeen ? new Date(otherUser.lastSeen).toLocaleString() : 'recently'}`}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                        <p className="text-xs sm:text-sm text-gray-500 mb-1">Chat Type</p>
+                        <p className="text-base sm:text-lg text-gray-800">Private Chat</p>
+                      </div>
+                      
+                      <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                        <p className="text-xs sm:text-sm text-gray-500 mb-1">Member Since</p>
+                        <p className="text-sm sm:text-base text-gray-800">
+                          {otherUser.createdAt ? new Date(otherUser.createdAt).toLocaleDateString() : 'N/A'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <p className="text-gray-500">Unable to load user information</p>
+                  </div>
+                );
+              })()}
+            </div>
           )}
         </div>
       )}

@@ -1,7 +1,6 @@
 import { useSelector, useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
-import { useCallback, useEffect, useRef, useState } from "react";
-import io from "socket.io-client";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 
 import axios from "../axiosInstance";
 import {
@@ -9,9 +8,11 @@ import {
   handelAddNewChat,
   handelAddChats,
   handelAddGroupChat,
+  handelToggleGroupChatModel,
   addNotifiation,
   clearNotification,
-  handelFetchUsersChat
+  handelFetchUsersChat,
+  markMessagesFetched
 } from "../store/slice";
 import instance from "../axiosInstance";
 import useSocket from "./useSocket";
@@ -19,10 +20,11 @@ import useSound from "./useSound";
 
 
 const useMyChats = () => {
-  const { socket } = useSocket();
+  const socket = useSocket();
   const { playNotificationSound } = useSound();
   const dispatch = useDispatch();
   const hasFetched = useRef(false);
+  const typingTimeoutRef = useRef(null);
   const {
     register,
     handleSubmit,
@@ -46,53 +48,85 @@ const useMyChats = () => {
   const [modelSearch, setModelSearch] = useState(initialValue);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
+  const [messagesLoading, setMessagesLoading] = useState(false);
   const [socketConnected, setSocketConnected] = useState(false);
-  const [typing,setTyping] = useState(false);
-  const [isTyping,setIsTyping] = useState(false)
+  const [typing, setTyping] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  
   //---------------------- redux-toolkit store data --------------------------
-  const { chats, selectedChat, groupChatFormModel, user,notifiaction,fetchUsersChats} = useSelector(
+  const { chats, selectedChat, groupChatFormModel, user, notifiaction, fetchUsersChats, messagesFetched } = useSelector(
     (store) => store.chatStore
   );
 
   // --------------------- connect socket io ------------------------------
   useEffect(() => {
-    socket.emit("setup", user);
-    socket.on("connected", () => {
-      setSocketConnected(true);
-    });
-    socket.on("typing",()=>setIsTyping(true))
-    socket.on("stop typing",()=>setIsTyping(false))
-  }, []);
-
-  // ------------sending message or notifiacation----------------
-  useEffect(() => {
-    socket.on("message_received", (newMessageReceived) => {
-      // If no selected chat or the message is from a different chat than the selected one
-      if (!selectedChat || selectedChat._id !== newMessageReceived.chatId._id) {
-        // Check if this notification is not already in the array
-        const notificationExists = notifiaction.some(
-          n => n._id === newMessageReceived._id
-        );
-        
-        if (!notificationExists) {
-          // Play sound notification
-          playNotificationSound();
-          
-          // Add notification and trigger chat list refresh to update latest messages
-          dispatch(addNotifiation(newMessageReceived));
-          dispatch(handelFetchUsersChat());
-        }
+    if (user && socket) {
+      console.log("useMyChats: Socket available, setting up listeners.");
+      
+      if (socket.connected) {
+          console.log("useMyChats: Emitting setup event.");
+          socket.emit("setup", user);
       } else {
-        // Message is for the currently selected chat, just add it to the current messages
-        setChatMessages(prevMessages => [...prevMessages, newMessageReceived]);
+          const handleConnect = () => {
+              console.log("useMyChats: Socket connected, emitting setup.");
+              socket.emit("setup", user);
+              setSocketConnected(true);
+          };
+          socket.once('connect', handleConnect); 
+          return () => socket.off('connect', handleConnect);
       }
-    });
-    
-    // Cleanup
-    return () => {
-      socket.off("message_received");
-    };
-  }, [selectedChat, notifiaction, playNotificationSound]);
+
+      const handleConnected = () => setSocketConnected(true);
+      const handleTyping = () => setIsTyping(true);
+      const handleStopTyping = () => setIsTyping(false);
+      
+      socket.on("connected", handleConnected);
+      socket.on("typing", handleTyping);
+      socket.on("stop typing", handleStopTyping);
+      
+      return () => {
+        console.log("useMyChats: Cleaning up connection listeners.");
+        socket.off("connected", handleConnected);
+        socket.off("typing", handleTyping);
+        socket.off("stop typing", handleStopTyping);
+      };
+    } else {
+       console.log("useMyChats: User or socket not available for connection setup.");
+    }
+  }, [user, socket]);
+
+  // ------------sending message or notification----------------
+  useEffect(() => {
+    if (socket) {
+        const handleMessageReceived = (newMessageReceived) => {
+          console.log("useMyChats: Message received", newMessageReceived);
+          if (!selectedChat || selectedChat._id !== newMessageReceived.chatId._id) {
+            const notificationExists = notifiaction.some(
+              n => n._id === newMessageReceived._id
+            );
+            
+            if (!notificationExists) {
+              playNotificationSound();
+              
+              dispatch(addNotifiation(newMessageReceived));
+              dispatch(handelFetchUsersChat());
+            }
+          } else {
+            setChatMessages(prevMessages => [...prevMessages, newMessageReceived]);
+          }
+        };
+
+        console.log("useMyChats: Setting up message listener.");
+        socket.on("message_received", handleMessageReceived);
+        
+        return () => {
+          console.log("useMyChats: Cleaning up message listener.");
+          socket.off("message_received", handleMessageReceived);
+        };
+    } else {
+        console.log("useMyChats: Socket not available for message listener.");
+    }
+  }, [selectedChat, notifiaction, dispatch, playNotificationSound, socket]);
 
   //================== add user into group chat====================
   const handelAddToGroup = (item) => {
@@ -105,6 +139,16 @@ const useMyChats = () => {
 
   // ============== create group chat ===================
   const handelCreateGroupChat = async () => {
+    if (!modelSearch.name || modelSearch.name.trim() === '') {
+      alert("Please enter a group name");
+      return;
+    }
+    
+    if (selectToGroupChat.length < 2) {
+      alert("Please select at least 2 users for a group chat");
+      return;
+    }
+    
     try {
       const response = await axios.post("chat/group", {
         name: modelSearch.name,
@@ -112,7 +156,19 @@ const useMyChats = () => {
       });
 
       if (response?.statusText === "OK") {
+        // Add the new group chat to the state
         dispatch(handelAddGroupChat(response?.data));
+        
+        // Close the modal
+        dispatch(handelToggleGroupChatModel());
+        
+        // Clear the form state
+        setModelSearch({ name: "", chats: "" });
+        setSelectToGroupChat([]);
+        setUserChat([]);
+        
+        // Optional: Show success message
+        console.log("Group chat created successfully!");
       }
     } catch (error) {
       console.log(error);
@@ -139,17 +195,31 @@ const useMyChats = () => {
     setSelectToGroupChat(newSelectedUser);
   };
 
+  //---------------------- handel close group chat modal with cleanup--------------------
+  const handelCloseGroupChatModal = useCallback(() => {
+    // Clear the form state when closing modal
+    setModelSearch({ name: "", chats: "" });
+    setSelectToGroupChat([]);
+    setUserChat([]);
+    // Toggle the modal closed
+    dispatch(handelToggleGroupChatModel());
+  }, [dispatch]);
+
   //---------------------- handel open and close slider--------------------
-  const handelCloseSlider = () => {
+  const handelCloseSlider = useCallback(() => {
     setSliderIsOpen(false);
-  };
-  const handelOpenSlider = () => {
+  }, []);
+  
+  const handelOpenSlider = useCallback(() => {
     setSliderIsOpen(true);
-  };
+  }, []);
 
   // ------------------- handel search user -----------------------
   const submitForm = async (data) => {
-    
+    if (!data?.chats || data.chats.trim() === '') {
+      setMessage("Please enter a search term");
+      return;
+    }
     
     try {
       setLoading(true);
@@ -158,45 +228,77 @@ const useMyChats = () => {
       if (response?.statusText === "OK") {
         setUserChat(response?.data);
         setMessage("");
-        setLoading(false);
       }
     } catch (error) {
       console.log(error);
-      setLoading(false);
       setMessage(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   //------------------------- handel add the user into chat--------------------
   const handelAccessChat = async (userId) => {
+    if (accessLoading) return;
+    
     try {
       setAccessLoading(true);
+      
+      const existingChat = chats.find(chat => 
+        !chat.isGroupChat && chat.users.some(user => user._id === userId)
+      );
+      
+      if (existingChat) {
+        dispatch(handelSelectedChat(existingChat));
+        setSliderIsOpen(false);
+        return;
+      }
+      
       const response = await instance.post("chat", {
         userId,
       });
+      
       if (response?.statusText === "OK") {
         dispatch(handelSelectedChat(response?.data));
-        dispatch(handelAddNewChat(response?.data));
+        
+        const chatExists = chats.some(chat => chat._id === response.data._id);
+        if (!chatExists) {
+          dispatch(handelAddNewChat(response?.data));
+        }
+        
         setSliderIsOpen(false);
       }
-      setAccessLoading(false);
     } catch (error) {
-      // setAccessChatMessage(error?.message);
+      console.log(error);
+    } finally {
       setAccessLoading(false);
     }
   };
 
   //-------------------------------------------------- my chat component -----------------------------------------
 
-  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+  const userInfo = useSelector(state => state.chatStore.user);
 
   //------------------------ active chat--------------
-  const getSender = (users) => {
-    return userInfo._id === users[0]._id ? users[1].name : users[0].name;
-  };
+  const getSender = useCallback((loggedUser, users) => {
+    if (!loggedUser || !users || users.length < 2) {
+      return "";
+    }
+    return loggedUser._id === users[0]._id ? users[1].name : users[0].name;
+  }, []);
+
+  // Get the full user object of the other chat participant
+  const getSenderFull = useCallback((loggedUser, chatUsers) => {
+    if (!loggedUser || !chatUsers || chatUsers.length < 2) {
+      return null;
+    }
+    return chatUsers[0]._id === loggedUser._id ? chatUsers[1] : chatUsers[0];
+  }, []);
 
   //----------------  get all users with which have chats---------------
-  const handelFetchChats = async () => {
+  const handelFetchChats = useCallback(async () => {
+    if (loading) return;
+    
     try {
       setLoading(true);
       const response = await axios.get("chat");
@@ -204,44 +306,84 @@ const useMyChats = () => {
       if (response?.statusText === "OK") {
         dispatch(handelAddChats(response?.data));
       }
-      setLoading(false);
-    } catch (error) {
-      alert(error.message);
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!hasFetched.current) {
-      handelFetchChats();
-      hasFetched.current = true;
-    }
-  }, [fetchUsersChats]);
-
-  //-------------------handel fetch all chats messages---------------------
-
-  const handleFetchAllChats = useCallback(async () => {
-    try {
-      const response = await instance.get(`messages/${selectedChat._id}`);
-
-      if (response.status === 200) {
-        setChatMessages(response?.data);
-        socket.emit("join chat", selectedChat._id);
-      }
     } catch (error) {
       console.log(error);
     } finally {
+      setLoading(false);
     }
-  }, [selectedChat]);
+  }, [dispatch, loading]);
 
+  // Fetch chats only when needed
   useEffect(() => {
-    if (selectedChat?._id) {
-      handleFetchAllChats();
+    if (!hasFetched.current || fetchUsersChats) {
+      handelFetchChats();
+      hasFetched.current = true;
     }
-  }, [selectedChat]);
+  }, [fetchUsersChats, handelFetchChats]);
+
+  //-------------------handel fetch all chats messages---------------------
+  const handleFetchAllChats = useCallback(async () => {
+    console.log("entered");
+    
+    const chatId = selectedChat?._id; // Get ID at the start
+    if (!chatId) {
+        console.log("useMyChats: handleFetchAllChats called without selectedChat ID.");
+        return;
+    }
+
+    console.log(`useMyChats: Fetching messages for chat ${chatId}...`);
+    setMessagesLoading(true); // Start loading
+    try {
+      const response = await instance.get(`messages/${chatId}`);
+console.log(response);
+
+      if (response.status === 200) {
+        console.log(`useMyChats: Successfully fetched ${response.data.length} messages for ${chatId}.`);
+        setChatMessages(response.data); // Update the state with fetched messages
+
+        // Ensure socket is defined before emitting
+        if (socket) {
+          console.log(`useMyChats: Emitting 'join chat' for ${chatId}.`);
+          socket.emit("join chat", chatId);
+        } else {
+          console.warn("useMyChats: Socket not available when trying to emit 'join chat'.");
+        }
+
+        // Mark as fetched *after* successful fetch and state update
+        // We can still mark it as fetched if needed elsewhere, even if we fetch again.
+        dispatch(markMessagesFetched(chatId));
+      } else {
+         console.error(`useMyChats: Failed to fetch messages for ${chatId}, status: ${response.status}`);
+      }
+    } catch (error) {
+      console.error(`useMyChats: Error fetching messages for chat ${chatId}:`, error);
+      // Optionally set an error state here or clear messages
+      setChatMessages([]); // Clear messages on error to avoid showing stale data
+    } finally {
+      setMessagesLoading(false); // Stop loading
+    }
+  }, [selectedChat?._id, socket, dispatch]); // Dependencies: id, socket, dispatch
+
+  // useEffect for Fetching Messages when selectedChat changes
+  useEffect(() => {
+    const chatId = selectedChat?._id; // Get the ID
+
+    if (chatId) { // Check if there is a selected chat ID
+        console.log(`useMyChats: Selected chat changed to ${chatId}. Triggering message fetch.`);
+        handleFetchAllChats(); // Call the fetch function unconditionally
+    } else {
+      // No chat selected, clear messages
+      console.log("useMyChats: No chat selected, clearing messages.");
+      setChatMessages([]);
+    }
+    // Depend only on the selected chat ID and the fetch function itself
+  }, [selectedChat?._id, handleFetchAllChats]);
 
   //-------------------- handel send message --------------------
-  const handelSendMessage = async (data) => {
+  const handelSendMessage = useCallback(async (data) => {
+    if (sendingMessage) return;
+    if (!data.content || data.content.trim() === '') return;
+    
     setSendingMessage(true);
     try {
       const response = await instance.post("messages", {
@@ -250,46 +392,54 @@ const useMyChats = () => {
       });
 
       if (response.status === 200) {
-        handleFetchAllChats();
+        setChatMessages(prev => [...prev, response.data]);
         socket.emit("new_message", response?.data);
+        reset();
       }
     } catch (error) {
       console.log(error);
     } finally {
       setSendingMessage(false);
-      reset();
     }
-  };
+  }, [selectedChat, socket, reset, sendingMessage]);
 
   // ---------------------- handel typing message -------------------
-  const handelChangeMessage = (event)=>{
-    const {value} = event.target;
-   if(!socketConnected) return;
-   if(!typing){
-    setTyping(true);
-    socket.emit("typing",selectedChat._id);
-   };
-   let lastTypingTime = new Date().getTime();
-   var timeLength = 3000;
-   setTimeout(()=>{
-    var timeNow = new Date().getTime();
-    var timeDiff = timeNow - lastTypingTime;
-    if(timeDiff >= timeLength && typing){
+  const handelChangeMessage = useCallback((event) => {
+    const { value } = event.target;
+    if (!socketConnected || !selectedChat) return;
+    
+    if (!typing) {
+      setTyping(true);
+      socket.emit("typing", selectedChat._id);
+    }
+    
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    typingTimeoutRef.current = setTimeout(() => {
       socket.emit("stop typing", selectedChat._id);
       setTyping(false);
-    }
-   },timeLength)
-     
-  }
+    }, 3000);
+  }, [socketConnected, selectedChat, socket, typing]);
 
-  const handleSelectChat = (chat) => {
+  const handleSelectChat = useCallback((chat) => {
+    if (selectedChat?._id === chat._id) return;
+    
     dispatch(handelSelectedChat(chat));
     
-    // Clear notifications for this chat when selected
     if (chat && chat._id) {
       dispatch(clearNotification(chat._id));
     }
-  };
+  }, [dispatch, selectedChat]);
+
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, [selectedChat]);
 
   return {
     handelFetchChats,
@@ -313,18 +463,20 @@ const useMyChats = () => {
     handelAddToGroup,
     selectToGroupChat,
     handelCreateGroupChat,
+    handelCloseGroupChatModal,
     modelSearch,
     handelInputChange,
     handelRemoveSelectedUser,
     handelSendMessage,
     sendingMessage,
     chatMessages,
+    messagesLoading,
     userInfo,
-    io,
     socket,
     handelChangeMessage,
     isTyping,
-    handleSelectChat
+    handleSelectChat,
+    getSenderFull
   };
 };
 

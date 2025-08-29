@@ -1,34 +1,56 @@
 import axios from "axios";
+import store from "./store/store";
 
+// Create an Axios instance with default configuration
 const instance = axios.create({
-  baseURL: "http://localhost:5000/api/",
+  baseURL: "http://localhost:8000/api/",
   headers: {
-    Accept: "application/json",
+    "Accept": "application/json",
     "Content-Type": "application/json",
   },
+  // Add longer timeout for slower connections
+  timeout: 10000,
 });
 
+// Request interceptor - runs before each request
 instance.interceptors.request.use(
   (config) => {
-    // Modify request config before sending, like adding auth token
-    const userInfo = JSON.parse(localStorage.getItem("userInfo")); // Example token
-
-    if (userInfo) {
-      config.headers.Authorization = `Bearer ${userInfo.token}`;
+    console.log(`Making ${config.method.toUpperCase()} request to: ${config.baseURL}${config.url}`);
+    
+    // Add auth token from Redux store if available
+    const state = store.getState();
+    const user = state.chatStore?.user;
+    
+    if (user?.token) {
+      config.headers.Authorization = `Bearer ${user.token}`;
+      console.log("Added auth token to request");
     }
+    
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error("Request interceptor error:", error);
+    return Promise.reject(error);
+  }
 );
 
+// Response interceptor - runs after each response
 instance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`Response from ${response.config.url}:`, response.status);
+    return response;
+  },
   (error) => {
-    // Handle errors globally (optional)
+    console.error("Response error:", error.message);
+    console.log("Response error status:", error.response?.status);
+    console.log("Response error data:", error.response?.data);
+    
+    // Handle auth errors
     if (error.response && error.response.status === 401) {
-      // Handle unauthorized errors, like redirecting to login
-      // e.g., logoutUser();
+      console.log("Unauthorized access detected");
+      // Optionally clear storage or redirect
     }
+    
     return Promise.reject(error);
   }
 );

@@ -1,47 +1,78 @@
-import React from "react";
+import React, { useState } from "react";
 import Input from "../helper/Input";
 import Button from "../helper/Button";
 import useLogin from "../hooks/useLogin";
 
 const Login = () => {
-  const { errors, handleSubmit, register, submitForm } = useLogin();
+  const { errors, handleSubmit, register, submitForm, message, isLoading } = useLogin();
+  const [showPassword, setShowPassword] = useState(false);
+  
   return (
     <>
       <form
         className="p-5 flex flex-col gap-5 transition-all"
         onSubmit={handleSubmit(submitForm)}
       >
-        <Input
-          label={"Email Address :-"}
-          type={"email"}
-          placeholder={"Enter your email"}
-          {...register("email", {
-            required: true,
-            pattern: {
-              value: /^[a-zA-Z0-9. _%-]+@[a-zA-Z0-9. -]+\.[a-zA-Z]{2,4}$/,
-              message: "Please enter a valid email address",
-            },
-          })}
-        />
-        {errors.email && (
-          <p className="error-message">{errors?.email?.message}</p>
+        <div className="mb-1">
+          <Input
+            label={"Email Address"}
+            type={"email"}
+            placeholder={"Enter your email"}
+            disabled={isLoading}
+            {...register("email", {
+              required: "Email is required",
+              pattern: {
+                value: /^[a-zA-Z0-9. _%-]+@[a-zA-Z0-9. -]+\.[a-zA-Z]{2,4}$/,
+                message: "Please enter a valid email address",
+              },
+            })}
+          />
+          {errors.email && (
+            <p className="text-red-400 text-sm mt-1 ml-1">{errors?.email?.message}</p>
+          )}
+        </div>
+        
+        <div className="mb-1 relative">
+          <Input
+            label={"Password"}
+            type={showPassword ? "text" : "password"}
+            placeholder={"Enter password"}
+            disabled={isLoading}
+            {...register("password", {
+              required: "Password is required",
+              validate: {
+                minLength: (value) =>
+                  value.length >= 8 || "Password must be at least 8 characters",
+              },
+            })}
+          />
+          <button 
+            type="button"
+            className="absolute right-3 top-10 text-sm text-gray-400 hover:text-white"
+            onClick={() => setShowPassword(!showPassword)}
+            disabled={isLoading}
+          >
+            {showPassword ? "Hide" : "Show"}
+          </button>
+          {errors.password && (
+            <p className="text-red-400 text-sm mt-1 ml-1">{errors?.password?.message}</p>
+          )}
+        </div>
+        
+        {message && (
+          <div className="bg-red-500/20 border border-red-500 p-3 rounded-md text-sm text-white">
+            {message}
+          </div>
         )}
-        <Input
-          label={"Password :-"}
-          type={"password"}
-          placeholder={"Enter password"}
-          {...register("password", {
-            required: true,
-            validate: {
-              minLength: (value) =>
-                value.length >= 8 || "Password must be at least 8 characters",
-            },
-          })}
-        />
-        {errors.password && (
-          <p className="error-message">{errors?.password?.message}</p>
-        )}
-        <Button type={"submit"} text={"Login"} className={"bg-blue-600"} />
+        
+        <div className="mt-2">
+          <Button 
+            type={"submit"} 
+            text={isLoading ? "Logging in..." : "Login"} 
+            className={"bg-blue-600 hover:bg-blue-700"} 
+            disabled={isLoading}
+          />
+        </div>
       </form>
     </>
   );

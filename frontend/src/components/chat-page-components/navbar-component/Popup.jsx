@@ -3,7 +3,7 @@ import profile from "../../../assets/images/chatAppBackground.avif";
 
 const Popup = ({ handelClosePopup }) => {
   return (
-    <div className="absolute top-0 bg-[rgba(0,0,0,0.8)] h-screen w-full flex items-center justify-center">
+    <div className="absolute top-0 bg-[rgba(0,0,0,0.8)] h-screen w-full flex items-center justify-center z-50">
       <div className="relative h-[60vh] w-2/5 bg-white rounded-xl ">
         <button
           onClick={handelClosePopup}
