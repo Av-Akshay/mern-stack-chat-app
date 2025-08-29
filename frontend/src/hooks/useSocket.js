@@ -1,7 +1,8 @@
 import { useEffect, useRef, useMemo } from "react";
 import io from "socket.io-client";
 import { useSelector, useDispatch } from "react-redux";
-import { updateUserOnlineStatus } from "../store/slice";
+import { updateUserOnlineStatus, updateLatestMessage, addNotifiation } from "../store/slice";
+import store from "../store/store";
 
 const useSocket = () => {
   const dispatch = useDispatch();
@@ -66,7 +67,27 @@ const useSocket = () => {
 
     const handleMessageReceived = (newMessage) => {
       console.log("New message received:", newMessage);
-      // TODO: Dispatch action to add message to Redux store
+      
+      // Update the latest message in the chat list
+      if (newMessage?.chatId) {
+        dispatch(updateLatestMessage({
+          chatId: newMessage.chatId._id || newMessage.chatId,
+          message: {
+            _id: newMessage._id,
+            content: newMessage.content,
+            sender: newMessage.sender,
+            createdAt: newMessage.createdAt
+          }
+        }));
+        
+        // Add notification if this chat is not currently selected
+        const state = store.getState();
+        const selectedChat = state.chatStore?.selectedChat;
+        
+        if (!selectedChat || selectedChat._id !== (newMessage.chatId._id || newMessage.chatId)) {
+          dispatch(addNotifiation(newMessage));
+        }
+      }
     };
 
     const handleTyping = () => {

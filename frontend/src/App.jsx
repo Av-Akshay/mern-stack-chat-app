@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import ChatPage from "./pages/ChatPage";
 import ThemeProvider from "./helper/ThemeProvider";
@@ -19,6 +19,8 @@ function App() {
               </ProtectedRoute>
             } 
           />
+          {/* Catch all undefined routes and redirect to home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
     </ThemeProvider>

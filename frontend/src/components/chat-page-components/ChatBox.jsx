@@ -10,6 +10,45 @@ import useMyChats from "../../hooks/useMyChats";
 import MessageBox from "./chatBox-components/MessageBox";
 import UserProfile from "./UserProfile";
 
+// Move MessageForm outside to prevent recreation on every render
+const MessageForm = memo(({ onSubmit, register, isLoading, onChange }) => (
+  <form
+    onSubmit={onSubmit}
+    className="flex items-center gap-2 h-[6vh] bg-white rounded-lg p-1 mt-1 shadow-sm"
+    autoComplete="off"
+  >
+    <input
+      name="message"
+      className="w-full bg-transparent py-2 px-3 outline-none text-slate-800 placeholder-slate-400"
+      type="text"
+      placeholder="Type a message..."
+      autoComplete="off"
+      autoCorrect="off"
+      autoCapitalize="off"
+      spellCheck="false"
+      {...register("content", {
+        required: "Message is required",
+        onChange: onChange,
+      })}
+    />
+ 
+    {isLoading ? (
+      <span className="px-3 py-2 text-slate-500 font-medium">
+        <div className="w-5 h-5 border-2 border-slate-500 border-t-transparent rounded-full animate-spin"></div>
+      </span>
+    ) : (
+      <button 
+        type="submit" 
+        className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-all"
+      >
+        <IoMdSend />
+      </button>
+    )}
+  </form>
+));
+
+MessageForm.displayName = 'MessageForm';
+
 const ChatBox = () => {
   const loginUser = useSelector(state => state.chatStore.user);
   const [showProfile, setShowProfile] = useState(false);
@@ -157,38 +196,6 @@ const ChatBox = () => {
         <p className="text-slate-600">Select a chat from the sidebar or search for users to start a conversation.</p>
       </div>
     </div>
-  ));
-
-  // Memoize the input form component
-  const MessageForm = memo(({ onSubmit, register, isLoading, onChange }) => (
-    <form
-      onSubmit={onSubmit}
-      className="flex items-center gap-2 h-[6vh] bg-white rounded-lg p-1 mt-1 shadow-sm"
-    >
-      <input
-        name="message"
-        className="w-full bg-transparent py-2 px-3 outline-none text-slate-800 placeholder-slate-400"
-        type="text"
-        placeholder="Type a message..."
-        {...register("content", {
-          required: "Message is required",
-          onChange: onChange,
-        })}
-      />
- 
-      {isLoading ? (
-        <span className="px-3 py-2 text-slate-500 font-medium">
-          <div className="w-5 h-5 border-2 border-slate-500 border-t-transparent rounded-full animate-spin"></div>
-        </span>
-      ) : (
-        <button 
-          type="submit" 
-          className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-all"
-        >
-          <IoMdSend />
-        </button>
-      )}
-    </form>
   ));
 
   return (

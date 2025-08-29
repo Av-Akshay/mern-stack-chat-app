@@ -168,6 +168,21 @@ const chatSlice = createSlice({
       }
       return false;
     },
+    // Update latest message in chat list
+    updateLatestMessage: (state, action) => {
+      const { chatId, message } = action.payload;
+      
+      // Find and update the chat with the latest message
+      const chatIndex = state.chats.findIndex(chat => chat._id === chatId);
+      if (chatIndex !== -1) {
+        state.chats[chatIndex].latestMessage = message;
+        
+        // Move the chat to the top of the list (most recent)
+        const updatedChat = state.chats[chatIndex];
+        state.chats.splice(chatIndex, 1);
+        state.chats.unshift(updatedChat);
+      }
+    },
     // Logout - clear all state
     handleLogout: (state) => {
       state.selectedChat = null;
@@ -200,6 +215,7 @@ export const {
   updateUserProfile,
   markMessagesFetched,
   refreshProfileIfNeeded,
+  updateLatestMessage,
   handleLogout
 } = chatSlice.actions;
 

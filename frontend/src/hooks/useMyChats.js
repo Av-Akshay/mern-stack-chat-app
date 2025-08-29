@@ -12,7 +12,8 @@ import {
   addNotifiation,
   clearNotification,
   handelFetchUsersChat,
-  markMessagesFetched
+  markMessagesFetched,
+  updateLatestMessage
 } from "../store/slice";
 import instance from "../axiosInstance";
 import useSocket from "./useSocket";
@@ -50,8 +51,10 @@ const useMyChats = () => {
   const [chatMessages, setChatMessages] = useState([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [socketConnected, setSocketConnected] = useState(false);
-  const [typing, setTyping] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const typingRef = useRef(false);
+  const selectedChatRef = useRef(null);
+  const socketRef = useRef(null);
   
   //---------------------- redux-toolkit store data --------------------------
   const { chats, selectedChat, groupChatFormModel, user, notifiaction, fetchUsersChats, messagesFetched } = useSelector(
@@ -394,6 +397,31 @@ console.log(response);
       if (response.status === 200) {
         setChatMessages(prev => [...prev, response.data]);
         socket.emit("new_message", response?.data);
+        
+        // Update the latest message in the chat list
+        dispatch(updateLatestMessage({
+          chatId: selectedChat._id,
+          message: {
+            _id: response.data._id,
+            content: response.data.content,
+            sender: response.data.sender,
+            createdAt: response.data.createdAt
+          }
+        }));
+        
+        // Reset typing state
+        if (typingRef.current) {
+          if (socketRef.current && selectedChatRef.current) {
+            socketRef.current.emit("stop typing", selectedChatRef.current._id);
+          }
+          typingRef.current = false;
+        }
+        
+        // Clear any typing timeout
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+        }
+        
         reset();
       }
     } catch (error) {
@@ -401,16 +429,27 @@ console.log(response);
     } finally {
       setSendingMessage(false);
     }
-  }, [selectedChat, socket, reset, sendingMessage]);
+  }, [selectedChat, socket, reset, sendingMessage, dispatch]);
+
+  // Update refs when values change
+  useEffect(() => {
+    selectedChatRef.current = selectedChat;
+  }, [selectedChat]);
+  
+  useEffect(() => {
+    socketRef.current = socket;
+  }, [socket]);
 
   // ---------------------- handel typing message -------------------
   const handelChangeMessage = useCallback((event) => {
     const { value } = event.target;
-    if (!socketConnected || !selectedChat) return;
+    if (!socketConnected || !selectedChatRef.current) return;
     
-    if (!typing) {
-      setTyping(true);
-      socket.emit("typing", selectedChat._id);
+    if (!typingRef.current) {
+      typingRef.current = true;
+      if (socketRef.current) {
+        socketRef.current.emit("typing", selectedChatRef.current._id);
+      }
     }
     
     if (typingTimeoutRef.current) {
@@ -418,10 +457,12 @@ console.log(response);
     }
     
     typingTimeoutRef.current = setTimeout(() => {
-      socket.emit("stop typing", selectedChat._id);
-      setTyping(false);
+      if (socketRef.current && selectedChatRef.current) {
+        socketRef.current.emit("stop typing", selectedChatRef.current._id);
+      }
+      typingRef.current = false;
     }, 3000);
-  }, [socketConnected, selectedChat, socket, typing]);
+  }, [socketConnected]);
 
   const handleSelectChat = useCallback((chat) => {
     if (selectedChat?._id === chat._id) return;

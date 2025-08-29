@@ -6,6 +6,30 @@ import {
 } from "../../store/slice";
 import CreateGroupChat from "./mychats-component/CreateGroupChat";
 
+// Helper function to format message time
+const formatMessageTime = (timestamp) => {
+  if (!timestamp) return '';
+  
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  
+  // Format as date for older messages
+  return date.toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric',
+    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+  });
+};
+
 const MyChats = () => {
   const {
     chats,
@@ -56,16 +80,25 @@ const MyChats = () => {
                   : "bg-slate-200 text-slate-800 hover:bg-slate-300"
               } p-3 h-full rounded-lg overflow-hidden transition-all duration-300 ease-in-out cursor-pointer`}
             >
-              <p className="capitalize h-full font-medium">
-                {!chat.isGroupChat ? getSender(userInfo, chat?.users) : chat.chatName}
-              </p>
+              <div className="flex justify-between items-start mb-1">
+                <p className="capitalize font-medium truncate flex-1">
+                  {!chat.isGroupChat ? getSender(userInfo, chat?.users) : chat.chatName}
+                </p>
+                {chat.latestMessage && (
+                  <span className={`text-xs ml-2 ${selectedChat?._id === chat?._id ? 'text-blue-100' : 'text-slate-400'}`}>
+                    {formatMessageTime(chat.latestMessage.createdAt || chat.updatedAt)}
+                  </span>
+                )}
+              </div>
               {chat.latestMessage && (
-                <p className={`text-xs truncate mt-1 ${selectedChat?._id === chat?._id ? 'text-blue-100' : 'text-slate-500'}`}>
+                <div className={`text-xs truncate ${selectedChat?._id === chat?._id ? 'text-blue-100' : 'text-slate-500'}`}>
                   <span className="font-medium">
-                    {chat.latestMessage.sender.name}:
+                    {chat.latestMessage.sender._id === userInfo?._id 
+                      ? "You" 
+                      : chat.latestMessage.sender.name}:
                   </span>{" "}
                   {chat.latestMessage.content}
-                </p>
+                </div>
               )}
             </div>
           ))
