@@ -71,27 +71,33 @@ const Navbar = ({ toggleChatList, isMobile }) => {
           slider={sliderIsOpen}
           closeSlider={handelCloseSlider}
         />
-        <div className="w-11/12 m-auto flex items-center justify-between">
+        <div className="w-full px-3 sm:px-6 flex items-center justify-between gap-2">
           <div className="flex items-center space-x-2">
             {isMobile && selectedChat && !sliderIsOpen && (
               <button
                 onClick={toggleChatList}
-                className="text-white bg-slate-700 p-2 rounded-md hover:bg-slate-600 transition"
+                className="text-white bg-slate-700 hover:bg-slate-600 p-2 rounded-full transition-all shadow-sm hover:shadow-md"
               >
-                {isMobile ? "≡" : ""}
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
               </button>
             )}
             <button
               onClick={handelOpenSlider}
-              className="border rounded-md bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-gray-200 px-2 py-1 text-sm md:text-base hover:bg-gray-300 dark:hover:bg-slate-600 transition-all"
+              className="flex items-center gap-2 border border-gray-300 dark:border-slate-600 rounded-full bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 px-3 sm:px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-slate-600 transition-all shadow-sm hover:shadow-md"
             >
-              Search User
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <span className="hidden sm:inline">Search User</span>
+              <span className="sm:hidden">Search</span>
             </button>
           </div>
-          <div>
+          <div className="hidden sm:block">
             <h1 className="text-white text-lg md:text-xl font-medium">Talk-A-Tive</h1>
           </div>
-          <div className="relative flex items-center gap-2">
+          <div className="relative flex items-center gap-1 sm:gap-2">
             <ThemeToggle />
             <NotificationBadge />
             
@@ -99,16 +105,16 @@ const Navbar = ({ toggleChatList, isMobile }) => {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="flex items-center justify-center gap-2 rounded-md bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 transition-all"
+                className="flex items-center justify-center gap-1 sm:gap-2 rounded-full bg-slate-700 hover:bg-slate-600 text-white px-2 sm:px-3 py-2 transition-all"
               >
                 {user?.pic ? (
                   <img
-                    className="w-6 h-6 md:w-7 md:h-7 rounded-full object-cover"
+                    className="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover"
                     src={user.pic}
                     alt="user"
                   />
                 ) : (
-                  <FaUser className="w-4 h-4 md:w-5 md:h-5" />
+                  <FaUser className="w-4 h-4 sm:w-5 sm:h-5" />
                 )}
                 <span className="hidden sm:block text-sm md:text-base font-medium">
                   {user?.name?.split(' ')[0] || 'Profile'}

@@ -45,9 +45,11 @@ const ChatPage = () => {
           <div className="relative h-full">
             <button 
               onClick={() => setShowChatList(true)}
-              className="absolute top-2 left-2 z-10 bg-gray-700 text-white p-2 rounded-full shadow-lg"
+              className="absolute top-3 left-3 z-10 bg-white dark:bg-slate-700 text-gray-700 dark:text-white p-2.5 rounded-full shadow-lg hover:shadow-xl transition-all"
             >
-              ←
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
             </button>
             <ChatBox />
           </div>
