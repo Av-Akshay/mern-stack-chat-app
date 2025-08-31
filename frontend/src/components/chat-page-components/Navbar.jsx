@@ -65,7 +65,7 @@ const Navbar = ({ toggleChatList, isMobile }) => {
   
   return (
     <>
-      <div className="h-[10vh] flex items-center justify-center bg-[rgba(0,0,0,0.5)]">
+      <div className="h-[10vh] flex items-center justify-center bg-slate-900/70 dark:bg-slate-950/80 backdrop-blur-sm">
         <Slider
           handelAccessChat={handelAccessChat}
           slider={sliderIsOpen}
@@ -83,7 +83,7 @@ const Navbar = ({ toggleChatList, isMobile }) => {
             )}
             <button
               onClick={handelOpenSlider}
-              className="border rounded-md bg-gray-200 px-2 py-1 text-sm md:text-base hover:bg-gray-300 transition-all"
+              className="border rounded-md bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-gray-200 px-2 py-1 text-sm md:text-base hover:bg-gray-300 dark:hover:bg-slate-600 transition-all"
             >
               Search User
             </button>
