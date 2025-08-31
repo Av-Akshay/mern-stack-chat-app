@@ -28,7 +28,7 @@ const Login = () => {
             })}
           />
           {errors.email && (
-            <p className="text-red-400 text-sm mt-1 ml-1">{errors?.email?.message}</p>
+            <p className="text-red-500 dark:text-red-400 text-sm mt-1 ml-1">{errors?.email?.message}</p>
           )}
         </div>
         
@@ -48,19 +48,19 @@ const Login = () => {
           />
           <button 
             type="button"
-            className="absolute right-3 top-10 text-sm text-gray-400 hover:text-white"
+            className="absolute right-3 top-10 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
             onClick={() => setShowPassword(!showPassword)}
             disabled={isLoading}
           >
             {showPassword ? "Hide" : "Show"}
           </button>
           {errors.password && (
-            <p className="text-red-400 text-sm mt-1 ml-1">{errors?.password?.message}</p>
+            <p className="text-red-500 dark:text-red-400 text-sm mt-1 ml-1">{errors?.password?.message}</p>
           )}
         </div>
         
         {message && (
-          <div className="bg-red-500/20 border border-red-500 p-3 rounded-md text-sm text-white">
+          <div className="bg-red-500/20 border border-red-500 p-3 rounded-md text-sm text-red-700 dark:text-red-300">
             {message}
           </div>
         )}
