@@ -14,14 +14,14 @@ import UserProfile from "./UserProfile";
 const MessageForm = memo(({ onSubmit, register, isLoading, onChange }) => (
   <form
     onSubmit={onSubmit}
-    className="flex items-center gap-2 h-[6vh] bg-white dark:bg-slate-800 rounded-lg p-1 mt-1 shadow-sm"
+    className="flex items-center gap-3 bg-white dark:bg-slate-800 rounded-2xl p-2 shadow-lg border border-gray-200 dark:border-slate-700 hover:shadow-xl transition-shadow duration-200"
     autoComplete="off"
   >
     <input
       name="message"
-      className="w-full bg-transparent py-2 px-3 outline-none text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+      className="w-full bg-transparent py-3 px-4 outline-none text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 text-sm"
       type="text"
-      placeholder="Type a message..."
+      placeholder="Type your message..."
       autoComplete="off"
       autoCorrect="off"
       autoCapitalize="off"
@@ -34,14 +34,14 @@ const MessageForm = memo(({ onSubmit, register, isLoading, onChange }) => (
  
     {isLoading ? (
       <span className="px-3 py-2 text-slate-500 dark:text-slate-400 font-medium">
-        <div className="w-5 h-5 border-2 border-slate-500 dark:border-slate-400 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-5 h-5 border-2 border-blue-500 dark:border-blue-400 border-t-transparent rounded-full animate-spin"></div>
       </span>
     ) : (
       <button 
         type="submit" 
-        className="p-2 bg-blue-500 dark:bg-blue-600 text-white rounded-full hover:bg-blue-600 dark:hover:bg-blue-700 transition-all"
+        className="p-2.5 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 transition-all transform hover:scale-105 shadow-md"
       >
-        <IoMdSend />
+        <IoMdSend className="w-5 h-5" />
       </button>
     )}
   </form>
@@ -115,8 +115,13 @@ const ChatBox = () => {
   const ChatHeader = memo(() => {
     if (!selectedChat) {
       return (
-        <div className="w-full text-center text-slate-500 dark:text-slate-400">
-          <p className="text-lg md:text-xl">Select a chat to start messaging</p>
+        <div className="w-full text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-slate-700 dark:to-slate-800 rounded-full">
+            <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Select a chat to start messaging</p>
+          </div>
         </div>
       );
     }
@@ -138,27 +143,28 @@ const ChatBox = () => {
               <img 
                 src={chatPartner?.pic || "https://as1.ftcdn.net/v2/jpg/03/46/83/96/1000_F_346839683_6nAPzbhpSkIpb8pmAwufkC7c5eD7wYws.jpg"} 
                 alt="User" 
-                className="w-10 h-10 rounded-full object-cover border-2 border-white dark:border-slate-700"
+                className="w-10 h-10 rounded-full object-cover ring-2 ring-white dark:ring-slate-700 shadow-md"
               />
               <span 
                 className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ${
                   chatPartner?.isOnline 
                     ? 'bg-green-500' 
                     : 'bg-gray-400'
-                } border-2 border-white dark:border-slate-700`}
+                } ring-2 ring-white dark:ring-slate-700 shadow-sm`}
               ></span>
             </div>
           )}
           
           <div>
-            <h1 className="text-lg md:text-xl font-medium capitalize text-slate-800 dark:text-slate-100 truncate max-w-[70%]">
+            <h1 className="text-base md:text-lg font-semibold capitalize text-slate-800 dark:text-slate-100 truncate max-w-[70%]">
               {selectedChat?.isGroupChat
                 ? selectedChat?.chatName
                 : getSender(userInfo, selectedChat?.users)}
             </h1>
             
             {!selectedChat.isGroupChat && (
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                {chatPartner?.isOnline && <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>}
                 {chatPartner?.isOnline 
                   ? 'Online' 
                   : 'Offline'}
@@ -171,7 +177,7 @@ const ChatBox = () => {
           {!selectedChat.isGroupChat && (
             <button 
               onClick={handleProfileButtonClick}
-              className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 transition-all p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 mr-2"
+              className="text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700/50 mr-2"
             >
               <FaUser className="text-lg" />
             </button>
@@ -179,7 +185,7 @@ const ChatBox = () => {
           
           <button 
             onClick={handelToggleChatTypePopup} 
-            className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 transition-all p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700"
+            className="text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700/50"
           >
             <IoEye className="text-xl md:text-2xl" />
           </button>
@@ -190,36 +196,45 @@ const ChatBox = () => {
 
   // Memoize the welcome message component
   const WelcomeMessage = memo(() => (
-    <div className="bg-slate-200 dark:bg-slate-800 h-[74vh] flex items-center justify-center rounded-lg">
-      <div className="text-center p-5 bg-white dark:bg-slate-700 rounded-lg shadow-sm max-w-md mx-auto">
-        <h3 className="text-xl font-medium text-slate-800 dark:text-slate-100 mb-2">Welcome to Talk-A-Tive</h3>
-        <p className="text-slate-600 dark:text-slate-300">Select a chat from the sidebar or search for users to start a conversation.</p>
+    <div className="bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 h-[74vh] flex items-center justify-center rounded-2xl">
+      <div className="text-center p-8 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-xl max-w-md mx-auto border border-gray-200 dark:border-slate-700">
+        <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 rounded-full flex items-center justify-center">
+          <svg className="w-8 h-8 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+        </div>
+        <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2">Welcome to Talk-A-Tive</h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400">Select a chat from the sidebar or search for users to start a conversation.</p>
       </div>
     </div>
   ));
 
   return (
-    <div className="w-full md:w-[65%] h-full bg-slate-100 dark:bg-slate-900 rounded-md p-2 shadow-md flex flex-col">
-      <div className="h-[8vh] flex items-center justify-between w-[95%] mx-auto">
+    <div className="w-full md:w-[65%] h-full bg-white dark:bg-slate-900 rounded-2xl p-3 shadow-xl border border-gray-200 dark:border-slate-800 flex flex-col">
+      <div className="h-[8vh] flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-slate-800">
         <ChatHeader />
       </div>
       
       {toggle && <ShowChatType handelToggle={handelToggleChatTypePopup} />}
 
       {selectedChat ? (
-        <div className="bg-slate-200 dark:bg-slate-800 h-[74vh] px-2 rounded-lg z-0 flex flex-col shadow-inner">
-          <MessageBox 
-            isTyping={isTyping} 
-            chatMessages={chatMessages}
-            isLoading={messagesLoading}
-            onUserClick={handleOpenProfile}
-          />
-          <MessageForm 
-            onSubmit={handleSubmit(handelSendMessage)}
-            register={register}
-            isLoading={sendingMessage}
-            onChange={handleMessageChange}
-          />
+        <div className="bg-gradient-to-b from-gray-50 to-white dark:from-slate-800 dark:to-slate-900 h-[74vh] rounded-xl z-0 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-hidden">
+            <MessageBox 
+              isTyping={isTyping} 
+              chatMessages={chatMessages}
+              isLoading={messagesLoading}
+              onUserClick={handleOpenProfile}
+            />
+          </div>
+          <div className="p-3 border-t border-gray-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
+            <MessageForm 
+              onSubmit={handleSubmit(handelSendMessage)}
+              register={register}
+              isLoading={sendingMessage}
+              onChange={handleMessageChange}
+            />
+          </div>
         </div>
       ) : (
         <WelcomeMessage />

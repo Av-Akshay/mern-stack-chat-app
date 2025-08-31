@@ -64,14 +64,11 @@ const useMyChats = () => {
   // --------------------- connect socket io ------------------------------
   useEffect(() => {
     if (user && socket) {
-      console.log("useMyChats: Socket available, setting up listeners.");
       
       if (socket.connected) {
-          console.log("useMyChats: Emitting setup event.");
           socket.emit("setup", user);
       } else {
           const handleConnect = () => {
-              console.log("useMyChats: Socket connected, emitting setup.");
               socket.emit("setup", user);
               setSocketConnected(true);
           };
@@ -88,7 +85,6 @@ const useMyChats = () => {
       socket.on("stop typing", handleStopTyping);
       
       return () => {
-        console.log("useMyChats: Cleaning up connection listeners.");
         socket.off("connected", handleConnected);
         socket.off("typing", handleTyping);
         socket.off("stop typing", handleStopTyping);
@@ -102,7 +98,6 @@ const useMyChats = () => {
   useEffect(() => {
     if (socket) {
         const handleMessageReceived = (newMessageReceived) => {
-          console.log("useMyChats: Message received", newMessageReceived);
           if (!selectedChat || selectedChat._id !== newMessageReceived.chatId._id) {
             const notificationExists = notifiaction.some(
               n => n._id === newMessageReceived._id
@@ -118,12 +113,9 @@ const useMyChats = () => {
             setChatMessages(prevMessages => [...prevMessages, newMessageReceived]);
           }
         };
-
-        console.log("useMyChats: Setting up message listener.");
         socket.on("message_received", handleMessageReceived);
         
         return () => {
-          console.log("useMyChats: Cleaning up message listener.");
           socket.off("message_received", handleMessageReceived);
         };
     } else {
@@ -330,23 +322,17 @@ const useMyChats = () => {
     
     const chatId = selectedChat?._id; // Get ID at the start
     if (!chatId) {
-        console.log("useMyChats: handleFetchAllChats called without selectedChat ID.");
         return;
     }
-
-    console.log(`useMyChats: Fetching messages for chat ${chatId}...`);
     setMessagesLoading(true); // Start loading
     try {
       const response = await instance.get(`messages/${chatId}`);
-console.log(response);
 
       if (response.status === 200) {
-        console.log(`useMyChats: Successfully fetched ${response.data.length} messages for ${chatId}.`);
         setChatMessages(response.data); // Update the state with fetched messages
 
         // Ensure socket is defined before emitting
         if (socket) {
-          console.log(`useMyChats: Emitting 'join chat' for ${chatId}.`);
           socket.emit("join chat", chatId);
         } else {
           console.warn("useMyChats: Socket not available when trying to emit 'join chat'.");
@@ -359,7 +345,6 @@ console.log(response);
          console.error(`useMyChats: Failed to fetch messages for ${chatId}, status: ${response.status}`);
       }
     } catch (error) {
-      console.error(`useMyChats: Error fetching messages for chat ${chatId}:`, error);
       // Optionally set an error state here or clear messages
       setChatMessages([]); // Clear messages on error to avoid showing stale data
     } finally {
@@ -372,11 +357,9 @@ console.log(response);
     const chatId = selectedChat?._id; // Get the ID
 
     if (chatId) { // Check if there is a selected chat ID
-        console.log(`useMyChats: Selected chat changed to ${chatId}. Triggering message fetch.`);
         handleFetchAllChats(); // Call the fetch function unconditionally
     } else {
       // No chat selected, clear messages
-      console.log("useMyChats: No chat selected, clearing messages.");
       setChatMessages([]);
     }
     // Depend only on the selected chat ID and the fetch function itself

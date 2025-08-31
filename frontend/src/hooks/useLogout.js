@@ -57,7 +57,6 @@ const useLogout = () => {
       
       return true; // Success
     } catch (err) {
-      console.error('Logout error:', err);
       setError(err.response?.data?.message || 'Failed to logout');
       
       // Even if API call fails, clear local state and redirect

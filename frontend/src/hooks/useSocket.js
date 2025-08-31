@@ -12,7 +12,6 @@ const useSocket = () => {
 
   const socket = useMemo(() => {
     if (!socketRef.current) {
-      console.log("Initializing new socket connection...");
       socketRef.current = io("http://localhost:8000", {
         withCredentials: true,
         reconnection: true,
@@ -24,7 +23,6 @@ const useSocket = () => {
       // Store socket globally for logout access
       window.socket = socketRef.current;
     } else {
-      console.log("Reusing existing socket connection.");
     }
     return socketRef.current;
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -32,20 +30,16 @@ const useSocket = () => {
 
   useEffect(() => {
     if (!socket || !userInfo?._id) {
-      console.log("Socket or userInfo not available, skipping setup.");
       if (socketRef.current?.connected && !userInfo?._id) {
-          console.log("User logged out, disconnecting socket.");
           socketRef.current.disconnect(); 
       }
       return; 
     }
 
     if (!socket.connected) {
-        console.log(`Connecting socket for user: ${userInfo._id}`);
         socket.connect();
     }
 
-    console.log(`Setting up socket events for user: ${userInfo._id}`);
     socket.emit("setup", userInfo);
     
     // Setup heartbeat - send every 25 seconds
@@ -56,7 +50,6 @@ const useSocket = () => {
     }, 25000);
 
     const handleUserStatusChange = (data) => {
-      console.log("Received user_status_change:", data);
       // Dispatch the action to update Redux state
       if (data && data.userId) { // Basic validation
           dispatch(updateUserOnlineStatus(data));
@@ -66,7 +59,6 @@ const useSocket = () => {
     };
 
     const handleMessageReceived = (newMessage) => {
-      console.log("New message received:", newMessage);
       
       // Update the latest message in the chat list
       if (newMessage?.chatId) {
