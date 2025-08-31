@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import UsersChats from "../navbar-component/slider-component/UsersChats";
 import useChatBox from "../../../hooks/useChatBox";
@@ -12,9 +12,12 @@ const ShowChatType = ({ handelToggle }) => {
     handelChangeTheGroupName,
     userChat,
     handelAddToGroup,
+    isAddingMember,
+    addMemberMessage,
   } = useChatBox();
   
   const { userInfo, getSenderFull } = useMyChats();
+  const [searchDisabled, setSearchDisabled] = useState(false);
 
   return (
     <div
@@ -107,37 +110,76 @@ const ShowChatType = ({ handelToggle }) => {
                   
                   <div className="bg-gray-50 p-4 sm:p-6 rounded-lg">
                     <h3 className="text-base sm:text-lg font-semibold text-gray-700 mb-3 sm:mb-4">Add New Member</h3>
+                    
+                    {/* Notification Messages */}
+                    {addMemberMessage && (
+                      <div className={`mb-3 p-3 rounded-md text-sm font-medium animate-fadeIn ${
+                        addMemberMessage.type === 'success' 
+                          ? 'bg-green-100 text-green-700 border border-green-300' 
+                          : addMemberMessage.type === 'warning'
+                          ? 'bg-yellow-100 text-yellow-700 border border-yellow-300'
+                          : 'bg-red-100 text-red-700 border border-red-300'
+                      }`}>
+                        {addMemberMessage.text}
+                      </div>
+                    )}
+                    
                     <input
                       name="chats"
                       type="text"
                       onChange={(e) => {
-                        setUpdateGroupChat((pre) => {
-                          return {
-                            ...pre,
-                            [e.target.name]: e.target.value,
-                          };
-                        });
+                        if (!isAddingMember) {
+                          setUpdateGroupChat((pre) => {
+                            return {
+                              ...pre,
+                              [e.target.name]: e.target.value,
+                            };
+                          });
+                        }
                       }}
-                      placeholder="Search user by name..."
-                      className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2 sm:mb-3"
-                    />
-                    <div
-                      className={`${
-                        userChat.length > 0
-                          ? "bg-white border border-gray-200 rounded-md max-h-48 overflow-auto"
-                          : "hidden"
+                      placeholder={isAddingMember ? "Adding member..." : "Search user by name..."}
+                      disabled={isAddingMember}
+                      className={`w-full px-3 py-2 text-sm sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2 sm:mb-3 transition-all ${
+                        isAddingMember 
+                          ? 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-60' 
+                          : 'bg-white border-gray-300 hover:border-gray-400'
                       }`}
-                    >
-                      {userChat?.map((item) => {
-                        return (
-                          <UsersChats
-                            key={item._id}
-                            handelAccessChat={handelAddToGroup}
-                            item={item}
-                          />
-                        );
-                      })}
-                    </div>
+                    />
+                    
+                    {/* Loading State */}
+                    {isAddingMember && (
+                      <div className="flex items-center justify-center py-4">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                          <span className="text-sm text-gray-600">Adding member to group...</span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* User Search Results */}
+                    {!isAddingMember && (
+                      <div
+                        className={`${
+                          userChat.length > 0
+                            ? "bg-white border border-gray-200 rounded-md max-h-48 overflow-auto"
+                            : "hidden"
+                        }`}
+                      >
+                        {userChat?.map((item) => {
+                          // Check if user is already in the group
+                          const isAlreadyMember = selectedChat?.users?.some(user => user._id === item._id);
+                          
+                          return (
+                            <UsersChats
+                              key={item._id}
+                              handelAddToGroup={handelAddToGroup}
+                              item={item}
+                              disabled={isAddingMember || isAlreadyMember}
+                            />
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

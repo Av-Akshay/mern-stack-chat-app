@@ -112,6 +112,22 @@ const renameGroup = asyncHandler(async (req, res) => {
 
 const addToGroup = asyncHandler(async (req, res) => {
   const { chatId, userId } = req.body;
+  
+  // First check if the chat exists and if user is already a member
+  const chat = await Chat.findById(chatId);
+  if (!chat) {
+    res.status(404);
+    throw new Error("Chat Not Found");
+  }
+  
+  // Check if user is already in the group
+  const isAlreadyMember = chat.users.some(user => user.toString() === userId);
+  if (isAlreadyMember) {
+    return res.status(400).json({ 
+      message: "User is already a member of this group" 
+    });
+  }
+  
   const added = await Chat.findByIdAndUpdate(
     chatId,
     {
@@ -123,6 +139,7 @@ const addToGroup = asyncHandler(async (req, res) => {
   )
     .populate("users", "-password")
     .populate("groupAdmin", "-password");
+  
   if (!added) {
     res.status(404);
     throw new Error("Chat Not Found");
