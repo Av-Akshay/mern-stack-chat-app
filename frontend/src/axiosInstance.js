@@ -3,7 +3,7 @@ import store from "./store/store";
 
 // Create an Axios instance with default configuration
 const instance = axios.create({
-  baseURL: "https://talk-a-tive-1zgp.onrender.com",
+  baseURL: "https://talk-a-tive-1zgp.onrender.com/api",
   headers: {
     "Accept": "application/json",
     "Content-Type": "application/json",
