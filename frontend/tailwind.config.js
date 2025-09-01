@@ -35,6 +35,7 @@ export default {
         'slideUp': 'slideUp 0.3s ease-out',
         'scaleIn': 'scaleIn 0.2s ease-out',
         'float': 'float 3s ease-in-out infinite',
+        'spin-slow': 'spin 20s linear infinite',
       },
       keyframes: {
         fadeIn: {
@@ -56,6 +57,10 @@ export default {
         float: {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-10px)' },
+        },
+        spin: {
+          'from': { transform: 'rotate(0deg)' },
+          'to': { transform: 'rotate(360deg)' },
         },
       },
       transitionProperty: {
