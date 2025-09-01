@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../axiosInstance';
 import { handleLogout } from '../store/slice';
 import { persistor } from '../store/store';
 
@@ -23,7 +23,7 @@ const useLogout = () => {
       if (token) {
         // Call logout API endpoint
         await axios.post(
-          'http://localhost:8000/api/user/logout',
+          'user/logout',
           {},
           {
             headers: {

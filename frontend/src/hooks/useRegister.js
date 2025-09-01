@@ -1,10 +1,9 @@
 import { useForm } from "react-hook-form";
-import axios from "axios";
-import instance from "../axiosInstance";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 
+import axios from "../axiosInstance";
 import { handleSaveUser } from "../store/slice";
 
 const useRegister = () => {
@@ -36,9 +35,9 @@ const useRegister = () => {
       // Try first with instance, then with direct axios if that fails
       let res;
       try {
-        res = await instance.post("user", formData);
+        res = await axios.post("user", formData);
       } catch (instanceError) {
-        res = await axios.post("http://localhost:8000/api/user", formData);
+        res = await axios.post("user", formData);
       }
       
       if (res?.data) {

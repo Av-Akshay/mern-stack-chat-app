@@ -1,6 +1,5 @@
 import { useForm } from "react-hook-form";
-import axios from "axios";
-import instance from "../axiosInstance";
+import axios from "../axiosInstance";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -27,7 +26,7 @@ const useLogin = () => {
       console.log("Attempting login for:", data.email);
       
       // Try with direct axios to fix any configuration issues
-      const response = await axios.post("http://localhost:8000/api/user/login", {
+      const response = await axios.post("user/login", {
         email: data.email,
         password: data.password
       }, {
