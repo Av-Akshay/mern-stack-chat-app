@@ -51,7 +51,7 @@ const server = app.listen(PORT, () => {
 
 const io = require("socket.io")(server, {
   cors: {
-    origin: ["http://localhost:3000", "http://localhost:5173"],
+    origin: ["https://talk-a-tive-raga.onrender.com"],
     methods: ["GET", "POST"],
     credentials: true
   },
