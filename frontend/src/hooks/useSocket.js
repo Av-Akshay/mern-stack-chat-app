@@ -12,7 +12,7 @@ const useSocket = () => {
 
   const socket = useMemo(() => {
     if (!socketRef.current) {
-      socketRef.current = io("http://localhost:8000", {
+      socketRef.current = io("https://talk-a-tive-1zgp.onrender.com", {
         withCredentials: true,
         reconnection: true,
         reconnectionAttempts: 5,
